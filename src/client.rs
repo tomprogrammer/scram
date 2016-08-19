@@ -18,6 +18,9 @@ const SHA256_LEN: usize = 32;
 
 /// Parses a `server_first_message` returning a (none, salt, iterations) tuple if successful.
 fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, u16), Error> {
+    if data.len() < 2 {
+        return Err(Error::Protocol(Kind::ExpectedField(Field::Nonce)));
+    }
     let mut parts = data.split(',').peekable();
     match parts.peek() {
         Some(part) if &part.as_bytes()[..2] == b"m=" => {
@@ -197,6 +200,9 @@ pub struct ServerFinal {
 
 impl ServerFinal {
     pub fn handle_server_final(self, server_final: &str) -> Result<(), Error> {
+        if server_final.len() < 2 {
+            return Err(Error::Protocol(Kind::ExpectedField(Field::VerifyOrError)));
+        }
         match &server_final[..2] {
             "v=" => {
                 let verifier = try!(base64::decode(&server_final.as_bytes()[2..])
