@@ -71,14 +71,14 @@ pub struct ClientFirst<'a> {
 impl<'a> ClientFirst<'a> {
     pub fn new(authcid: &'a str, password: &'a str, authzid: Option<&'a str>) -> io::Result<Self> {
         let rng = try!(OsRng::new());
-        Ok(Self::with_random(authcid, password, authzid, rng))
+        Ok(Self::with_rng(authcid, password, authzid, rng))
     }
 
-    pub fn with_random<R: Rng>(authcid: &'a str,
-                               password: &'a str,
-                               authzid: Option<&'a str>,
-                               mut rng: R)
-                               -> Self {
+    pub fn with_rng<R: Rng>(authcid: &'a str,
+                            password: &'a str,
+                            authzid: Option<&'a str>,
+                            mut rng: R)
+                            -> Self {
         let gs2header: Cow<'static, str> = match authzid {
             Some(authzid) => format!("n,a={},", authzid).into(),
             None => "n,,".into(),
