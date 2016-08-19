@@ -103,7 +103,13 @@ impl<'a, R: Rng> ClientFirst<'a, R> {
             })
             .collect();
 
-        let client_first_bare = format!("n={},r={}", self.authcid, nonce);
+        let escaped_authcid: Cow<'a, str> =
+            if self.authcid.chars().any(|chr| chr == ',' || chr == '=') {
+                self.authcid.into()
+            } else {
+                self.authcid.replace(',', "=2C").replace('=', "=3D").into()
+            };
+        let client_first_bare = format!("n={},r={}", escaped_authcid, nonce);
         let client_first = format!("{}{}", self.gs2header, client_first_bare);
         let server_first = ServerFirst {
             gs2header: self.gs2header,
