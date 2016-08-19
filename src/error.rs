@@ -1,6 +1,6 @@
 use std::{error, fmt};
 
-/// SCRAM mechanism error cases.
+/// The SCRAM mechanism error cases.
 #[derive(Debug)]
 pub enum Error {
     /// A message wasn't formatted as required. `Kind` contains further information.
@@ -9,13 +9,14 @@ pub enum Error {
     Protocol(Kind),
     /// The server required a mandatory extension to be present that this client doesn't support.
     UnsupportedExtension,
-    /// The server couldn't be validated.
+    /// The server couldn't be validated. This usually means that the server didn't posess a stored
+    /// key to verify the credentials.
     InvalidServer,
-    /// The server rejected the authentication request.
+    /// The server rejected the authentication request. `String` contains a message from the server.
     Authentication(String),
 }
 
-/// Kinds of protocol errors.
+/// The kinds of protocol errors.
 #[derive(Debug)]
 pub enum Kind {
     /// The server responded with a nonce that doesn't start with our nonce.
@@ -26,7 +27,7 @@ pub enum Kind {
     ExpectedField(Field),
 }
 
-/// Fields used in the exchanged messages.
+/// The fields used in the exchanged messages.
 #[derive(Debug)]
 pub enum Field {
     /// Nonce

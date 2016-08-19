@@ -56,10 +56,10 @@ fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, u16), Error> {
             return Err(Error::Protocol(Kind::ExpectedField(Field::Iterations)));
         }
     };
-
     Ok((nonce, salt, iterations))
 }
 
+/// The initial state of the SCRAM mechanism. It's the entry point for a SCRAM handshake.
 #[derive(Debug)]
 pub struct ClientFirst<'a> {
     gs2header: Cow<'static, str>,
@@ -69,11 +69,36 @@ pub struct ClientFirst<'a> {
 }
 
 impl<'a> ClientFirst<'a> {
+    /// Constructs an initial state for the SCRAM mechanism using the provided credentials.
+    ///
+    /// # Arguments
+    ///
+    /// * authcid - An username used for authentication.
+    /// * password - A password used to prove that the user is authentic.
+    /// * authzid - An username used for authorization. This can be used to impersonate as `authzid`
+    /// using the credentials of `authcid`. If `authzid` is `None` the authorized username will be
+    /// the same as the authenticated username.
+    ///
+    /// # Return value
+    ///
+    /// An I/O error is returned if the internal random number generator couldn't be constructed.
     pub fn new(authcid: &'a str, password: &'a str, authzid: Option<&'a str>) -> io::Result<Self> {
         let rng = try!(OsRng::new());
         Ok(Self::with_rng(authcid, password, authzid, rng))
     }
 
+    /// Constructs an initial state for the SCRAM mechanism using the provided credentials and a
+    /// custom random number generator.
+    ///
+    /// # Arguments
+    ///
+    /// * authcid - An username used for authentication.
+    /// * password - A password used to prove that the user is authentic.
+    /// * authzid - An username used for authorization. This can be used to impersonate as `authzid`
+    /// using the credentials of `authcid`. If `authzid` is `None` the authorized username will be
+    /// the same as the authenticated username.
+    /// * rng: A random number generator used to generate random nonces. Please only use a
+    /// cryptographically secure random number generator!
     pub fn with_rng<R: Rng>(authcid: &'a str,
                             password: &'a str,
                             authzid: Option<&'a str>,
@@ -103,6 +128,11 @@ impl<'a> ClientFirst<'a> {
         }
     }
 
+    /// Returns the next state and the first client message.
+    ///
+    /// Call the
+    /// [`ServerFirst::handle_server_first`](struct.ServerFirst.html#method.handle_server_first)
+    /// method to continue the SCRAM handshake.
     pub fn client_first(self) -> (ServerFirst<'a>, String) {
         let escaped_authcid: Cow<'a, str> =
             if self.authcid.chars().any(|chr| chr == ',' || chr == '=') {
@@ -122,6 +152,7 @@ impl<'a> ClientFirst<'a> {
     }
 }
 
+/// The second state of the SCRAM mechanism after the first client message was computed.
 #[derive(Debug)]
 pub struct ServerFirst<'a> {
     gs2header: Cow<'static, str>,
@@ -131,6 +162,18 @@ pub struct ServerFirst<'a> {
 }
 
 impl<'a> ServerFirst<'a> {
+    /// Processes the first answer from the server and returns the next state or an error. If an
+    /// error is returned the SCRAM handshake is aborted.
+    ///
+    /// Call the [`ClientFinal::client_final`](struct.ClientFinal.html#method.client_final) method
+    /// to continue the handshake.
+    ///
+    /// # Return value
+    ///
+    /// This method returns only a subset of the errors defined in [`Error`](enum.Error.html):
+    ///
+    /// * Error::Protocol
+    /// * Error::UnsupportedExtension
     pub fn handle_server_first(self, server_first: &str) -> Result<ClientFinal, Error> {
         fn sign_slice(key: &SigningKey, slice: &[&[u8]]) -> Digest {
             let mut signature_context = SigningContext::with_key(key);
@@ -186,6 +229,8 @@ impl<'a> ServerFirst<'a> {
     }
 }
 
+/// The third state of the SCRAM mechanism after the first server message was successfully
+/// processed.
 #[derive(Debug)]
 pub struct ClientFinal {
     server_signature: DebugDigest,
@@ -193,6 +238,11 @@ pub struct ClientFinal {
 }
 
 impl ClientFinal {
+    /// Returns the next state and the final client message.
+    ///
+    /// Call the
+    /// [`ServerFinal::handle_server_final`](struct.ServerFinal.html#method.handle_server_final)
+    /// method to continue the SCRAM handshake.
     #[inline]
     pub fn client_final(self) -> (ServerFinal, String) {
         let server_final = ServerFinal { server_signature: self.server_signature };
@@ -200,12 +250,24 @@ impl ClientFinal {
     }
 }
 
+/// The final state of the SCRAM mechanism after the final client message was computed.
 #[derive(Debug)]
 pub struct ServerFinal {
     server_signature: DebugDigest,
 }
 
 impl ServerFinal {
+    /// Processes the final answer from the server and returns the authentication result.
+    ///
+    /// # Return value
+    ///
+    /// * A value of `Ok(())` signals a successful authentication attempt.
+    /// * A value of `Err(Error::Protocol(_)` or `Err(Error::UnsupportedExtension)` means that the
+    /// authentication request failed.
+    /// * A value of `Err(Error::InvalidServer)` or `Err(Error::Authentication(_))` means that the
+    /// authentication request was rejected.
+    ///
+    /// Detailed semantics are documented in the [`Error`](enum.Error.html) type.
     pub fn handle_server_final(self, server_final: &str) -> Result<(), Error> {
         if server_final.len() < 2 {
             return Err(Error::Protocol(Kind::ExpectedField(Field::VerifyOrError)));

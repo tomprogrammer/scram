@@ -1,7 +1,7 @@
-//! Salted Challenge Response Authentication Mechanism (SCRAM)
+//! # Salted Challenge Response Authentication Mechanism (SCRAM)
 //!
-//! This implementation currently provides the SCRAM-SHA-256 mechanism according to RFC5802 and
-//! RFC7677.
+//! This implementation currently provides a client for the SCRAM-SHA-256 mechanism according to
+//! RFC5802 and RFC7677. It doesn't support channel-binding.
 
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
