@@ -61,60 +61,61 @@ fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, u16), Error> {
 }
 
 #[derive(Debug)]
-pub struct ClientFirst<'a, R> {
+pub struct ClientFirst<'a> {
     gs2header: Cow<'static, str>,
     password: &'a str,
+    nonce: String,
     authcid: &'a str,
-    rng: R,
 }
 
-impl<'a> ClientFirst<'a, OsRng> {
+impl<'a> ClientFirst<'a> {
     pub fn new(authcid: &'a str, password: &'a str, authzid: Option<&'a str>) -> io::Result<Self> {
         let rng = try!(OsRng::new());
         Ok(Self::with_random(authcid, password, authzid, rng))
     }
-}
 
-impl<'a, R: Rng> ClientFirst<'a, R> {
-    pub fn with_random(authcid: &'a str,
-                       password: &'a str,
-                       authzid: Option<&'a str>,
-                       rng: R)
-                       -> Self {
+    pub fn with_random<R: Rng>(authcid: &'a str,
+                               password: &'a str,
+                               authzid: Option<&'a str>,
+                               mut rng: R)
+                               -> Self {
         let gs2header: Cow<'static, str> = match authzid {
             Some(authzid) => format!("n,a={},", authzid).into(),
             None => "n,,".into(),
         };
+        let range = Range::new(33, 125);
+        let nonce: String = (0..NONCE_LENGTH)
+            .map(move |_| {
+                let x: u8 = range.ind_sample(&mut rng);
+                if x > 43 {
+                    (x + 1) as char
+                } else {
+                    x as char
+                }
+            })
+            .collect();
 
         ClientFirst {
             gs2header: gs2header,
             password: password,
             authcid: authcid,
-            rng: rng,
+            nonce: nonce,
         }
     }
 
-    pub fn client_first(mut self) -> (ServerFirst<'a>, String) {
-        let range = Range::new(33, 125);
-        let nonce: String = (0..NONCE_LENGTH)
-            .map(|_| {
-                let x: u8 = range.ind_sample(&mut self.rng);
-                if x > 43 { (x + 1) as char } else { x as char }
-            })
-            .collect();
-
+    pub fn client_first(self) -> (ServerFirst<'a>, String) {
         let escaped_authcid: Cow<'a, str> =
             if self.authcid.chars().any(|chr| chr == ',' || chr == '=') {
                 self.authcid.into()
             } else {
                 self.authcid.replace(',', "=2C").replace('=', "=3D").into()
             };
-        let client_first_bare = format!("n={},r={}", escaped_authcid, nonce);
+        let client_first_bare = format!("n={},r={}", escaped_authcid, self.nonce);
         let client_first = format!("{}{}", self.gs2header, client_first_bare);
         let server_first = ServerFirst {
             gs2header: self.gs2header,
             password: self.password,
-            client_nonce: nonce,
+            client_nonce: self.nonce,
             client_first_bare: client_first_bare,
         };
         (server_first, client_first)
