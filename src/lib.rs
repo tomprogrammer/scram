@@ -23,7 +23,7 @@
 //! types advances the SCRAM handshake step by step. Computing client messages never fails but
 //! processing server messages can result in failure.
 //!
-//! ``` rust,norun
+//! ``` rust,no_run
 //! use scram::ClientFirst;
 //!
 //! // This function represents your I/O implementation.
@@ -42,7 +42,7 @@
 //!
 //! // Process the reply and again reassign the SCRAM state. You can add error handling to
 //! // abort the authentication attempt.
-//! let scram = scram.handle_server_first(server_first).unwrap();
+//! let scram = scram.handle_server_first(&server_first).unwrap();
 //!
 //! // Get the client final message and reassign the SCRAM state.
 //! let (scram, client_final) = scram.client_final();
@@ -52,7 +52,7 @@
 //!
 //! // Process the last message. Any error returned means that the authentication attempt
 //! // wasn't successful.
-//! let () = scram.handle_server_final(server_final).unwrap();
+//! let () = scram.handle_server_final(&server_final).unwrap();
 //! ```
 
 #![cfg_attr(feature = "clippy", feature(plugin))]

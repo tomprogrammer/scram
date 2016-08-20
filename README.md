@@ -43,7 +43,7 @@ let server_first = send_and_receive(&client_first);
 
 // Process the reply and again reassign the SCRAM state. You can add error handling to
 // abort the authentication attempt.
-let scram = scram.handle_server_first(server_first).unwrap();
+let scram = scram.handle_server_first(&server_first).unwrap();
 
 // Get the client final message and reassign the SCRAM state.
 let (scram, client_final) = scram.client_final();
@@ -53,5 +53,5 @@ let server_final = send_and_receive(&client_final);
 
 // Process the last message. Any error returned means that the authentication attempt
 // wasn't successful.
-let () = scram.handle_server_final(server_final).unwrap();
+let () = scram.handle_server_final(&server_final).unwrap();
 ```
