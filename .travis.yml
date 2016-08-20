@@ -13,11 +13,11 @@ before_script:
 script:
   - |
     travis-cargo build &&
-    travis-cargo test
+    travis-cargo test &&
     travis-cargo --only stable doc
 
 after_success:
-  - trais-cargo --only stable doc-upload
+  - travis-cargo --only stable doc-upload
 
 env:
   global:
