@@ -5,6 +5,7 @@ keywords = ["scram", "authentication"]
 license = "MIT"
 name = "scram"
 repository = "https://github.com/tomprogrammer/scram"
+documentation = "https://tomprogrammer.github.io/scram/scram/index.html"
 readme = "README.md"
 version = "0.0.1"
 
