@@ -7,12 +7,12 @@ name = "scram"
 repository = "https://github.com/tomprogrammer/scram"
 documentation = "https://tomprogrammer.github.io/scram/scram/index.html"
 readme = "README.md"
-version = "0.0.1"
+version = "0.0.2"
 
 [dependencies]
 data-encoding = "1.1.2"
 rand = "0.3.14"
-ring = "0.2.3"
+ring = "0.3.0"
 
 [dependencies.clippy]
 optional = true
