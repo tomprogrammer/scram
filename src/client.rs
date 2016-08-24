@@ -9,7 +9,6 @@ use ring::digest::{digest, SHA256, Digest};
 use ring::hmac::{SigningKey, SigningContext, sign};
 use ring::pbkdf2::{HMAC_SHA256, derive};
 use error::{Error, Kind, Field};
-use super::DebugDigest;
 
 /// The length of the client nonce in characters/bytes.
 const NONCE_LENGTH: usize = 24;
@@ -223,7 +222,7 @@ impl<'a> ServerFirst<'a> {
                                    nonce,
                                    base64::encode(&client_proof));
         Ok(ClientFinal {
-            server_signature: DebugDigest(server_signature),
+            server_signature: server_signature,
             client_final: client_final,
         })
     }
@@ -233,7 +232,7 @@ impl<'a> ServerFirst<'a> {
 /// processed.
 #[derive(Debug)]
 pub struct ClientFinal {
-    server_signature: DebugDigest,
+    server_signature: Digest,
     client_final: String,
 }
 
@@ -253,7 +252,7 @@ impl ClientFinal {
 /// The final state of the SCRAM mechanism after the final client message was computed.
 #[derive(Debug)]
 pub struct ServerFinal {
-    server_signature: DebugDigest,
+    server_signature: Digest,
 }
 
 impl ServerFinal {
