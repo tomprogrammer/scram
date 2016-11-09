@@ -12,4 +12,4 @@ version = "0.1.0"
 [dependencies]
 data-encoding = "1.1.2"
 rand = "0.3.14"
-ring = "0.3.0"
+ring = "0.5"
