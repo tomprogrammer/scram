@@ -55,9 +55,6 @@
 //! let () = scram.handle_server_final(&server_final).unwrap();
 //! ```
 
-#![cfg_attr(feature = "clippy", feature(plugin))]
-#![cfg_attr(feature = "clippy", plugin(clippy))]
-
 extern crate data_encoding;
 extern crate rand;
 extern crate ring;
