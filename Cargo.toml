@@ -10,6 +10,6 @@ readme = "README.md"
 version = "0.1.0"
 
 [dependencies]
-data-encoding = "1.1.2"
-rand = "0.3.14"
-ring = "0.5"
+data-encoding = "1.1"
+rand = "0.3"
+ring = "0.6"

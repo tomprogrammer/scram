@@ -27,6 +27,7 @@
 //! use scram::ClientFirst;
 //!
 //! // This function represents your I/O implementation.
+//! # #[allow(unused_variables)]
 //! fn send_and_receive(message: &str) -> String {
 //!     unimplemented!()
 //! }
