@@ -7,7 +7,7 @@ name = "scram"
 repository = "https://github.com/tomprogrammer/scram"
 documentation = "https://tomprogrammer.github.io/scram/scram/index.html"
 readme = "README.md"
-version = "0.1.0"
+version = "0.1.1"
 
 [dependencies]
 data-encoding = "1.1"
