@@ -1,7 +1,7 @@
 use std::{error, fmt};
 
 /// The SCRAM mechanism error cases.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Error {
     /// A message wasn't formatted as required. `Kind` contains further information.
     ///
@@ -14,10 +14,12 @@ pub enum Error {
     InvalidServer,
     /// The server rejected the authentication request. `String` contains a message from the server.
     Authentication(String),
+    /// The username supplied was not valid
+    InvalidUser(String),
 }
 
 /// The kinds of protocol errors.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Kind {
     /// The server responded with a nonce that doesn't start with our nonce.
     InvalidNonce,
@@ -28,7 +30,7 @@ pub enum Kind {
 }
 
 /// The fields used in the exchanged messages.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Field {
     /// Nonce
     Nonce,
@@ -38,6 +40,16 @@ pub enum Field {
     Iterations,
     /// Verify or Error
     VerifyOrError,
+    /// Channel Binding
+    ChannelBinding,
+    /// Authtorization ID
+    Authzid,
+    /// Authcid
+    Authcid,
+    /// GS2Header
+    GS2Header,
+    /// Client Proof
+    Proof
 }
 
 impl fmt::Display for Error {
@@ -50,6 +62,7 @@ impl fmt::Display for Error {
             Protocol(ExpectedField(ref field)) => write!(fmt, "Expected field {:?}", field),
             UnsupportedExtension => write!(fmt, "Unsupported extension"),
             InvalidServer => write!(fmt, "Server failed validation"),
+            InvalidUser(ref username) => write!(fmt, "Invalid user: '{}'", username),
             Authentication(ref msg) => write!(fmt, "authentication error {}", msg),
         }
     }
@@ -65,6 +78,7 @@ impl error::Error for Error {
             Protocol(ExpectedField(_)) => "Expected field",
             UnsupportedExtension => "Unsupported extension",
             InvalidServer => "Server failed validation",
+            InvalidUser(_) => "Invalid user",
             Authentication(_) => "Unspecified error",
         }
     }
