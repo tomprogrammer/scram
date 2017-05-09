@@ -6,7 +6,7 @@ use rand::distributions::IndependentSample;
 use rand::distributions::range::Range;
 use rand::os::OsRng;
 use rand::Rng;
-use ring::digest::Digest;
+use ring::hmac;
 
 use utils::{hash_password, find_proofs};
 use error::{Error, Kind, Field};
@@ -179,7 +179,7 @@ impl<'a> ServerFirst<'a> {
 
         let salted_password = hash_password(self.password, iterations, &salt);
 
-        let (client_proof, server_signature): ([u8; SHA256_LEN], Digest) =
+        let (client_proof, server_signature): ([u8; SHA256_LEN], hmac::Signature) =
             find_proofs(&self.gs2header,
                         &self.client_first_bare.into(),
                         &server_first.into(),
@@ -201,7 +201,7 @@ impl<'a> ServerFirst<'a> {
 /// processed.
 #[derive(Debug)]
 pub struct ClientFinal {
-    server_signature: Digest,
+    server_signature: hmac::Signature,
     client_final: String,
 }
 
@@ -221,7 +221,7 @@ impl ClientFinal {
 /// The final state of the SCRAM mechanism after the final client message was computed.
 #[derive(Debug)]
 pub struct ServerFinal {
-    server_signature: Digest,
+    server_signature: hmac::Signature,
 }
 
 impl ServerFinal {

@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use data_encoding::base64;
-use ring::digest::{digest, SHA256, Digest};
+use ring::digest::{digest, SHA256};
+use ring::hmac;
 use ring::hmac::{SigningKey, SigningContext, sign};
 use ring::pbkdf2::{HMAC_SHA256, derive};
 use ::{SHA256_LEN};
@@ -32,7 +33,7 @@ macro_rules! parse_part {
 pub fn hash_password(password: &str, iterations: u16, salt: &[u8]) -> [u8; SHA256_LEN] {
     let mut salted_password = [0u8; SHA256_LEN];
     derive(&HMAC_SHA256,
-           iterations as usize,
+           u32::from(iterations),
            salt,
            password.as_bytes(),
            &mut salted_password);
@@ -40,8 +41,8 @@ pub fn hash_password(password: &str, iterations: u16, salt: &[u8]) -> [u8; SHA25
 }
 
 /// Finds the client proof and server signature based on the shared hashed key.
-pub fn find_proofs(gs2header: &Cow<'static, str>, client_first_bare: &Cow<str>, server_first: &Cow<str>, salted_password: &[u8], nonce: &str) -> ([u8;SHA256_LEN], Digest) {
-    fn sign_slice(key: &SigningKey, slice: &[&[u8]]) -> Digest {
+pub fn find_proofs(gs2header: &Cow<'static, str>, client_first_bare: &Cow<str>, server_first: &Cow<str>, salted_password: &[u8], nonce: &str) -> ([u8;SHA256_LEN], hmac::Signature) {
+    fn sign_slice(key: &SigningKey, slice: &[&[u8]]) -> hmac::Signature {
         let mut signature_context = SigningContext::with_key(key);
         for item in slice {
             signature_context.update(item);
