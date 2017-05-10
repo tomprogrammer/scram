@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::io;
 
-use data_encoding::base64;
+use base64;
 use rand::distributions::IndependentSample;
 use rand::distributions::range::Range;
 use rand::os::OsRng;

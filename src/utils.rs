@@ -1,5 +1,6 @@
 use std::borrow::Cow;
-use data_encoding::base64;
+
+use base64;
 use ring::digest::{digest, SHA256, SHA256_OUTPUT_LEN};
 use ring::hmac;
 use ring::hmac::{SigningKey, SigningContext, sign};

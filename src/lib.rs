@@ -126,7 +126,7 @@
 //! // Check if the client successfully authenticated
 //! assert_eq!(status, AuthenticationStatus::Authenticated);
 //! ```
-extern crate data_encoding;
+extern crate base64;
 extern crate rand;
 extern crate ring;
 

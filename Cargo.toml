@@ -1,15 +1,15 @@
 [package]
 authors = ["Thomas Bahn <thomas@thomas-bahn.net>"]
 description = "A SCRAM provider library."
+documentation = "https://tomprogrammer.github.io/scram/scram/index.html"
 keywords = ["scram", "authentication"]
 license = "MIT"
 name = "scram"
-repository = "https://github.com/tomprogrammer/scram"
-documentation = "https://tomprogrammer.github.io/scram/scram/index.html"
 readme = "README.md"
+repository = "https://github.com/tomprogrammer/scram"
 version = "0.2.0"
 
 [dependencies]
-data-encoding = "1.1"
+base64 = "0.5.2"
 rand = "0.3"
 ring = "0.9.4"
