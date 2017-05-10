@@ -4,8 +4,7 @@ use std::io;
 use base64;
 use rand::distributions::IndependentSample;
 use rand::distributions::range::Range;
-use rand::os::OsRng;
-use rand::Rng;
+use rand::{Rng, OsRng};
 use ring::digest::SHA256_OUTPUT_LEN;
 use ring::hmac;
 
@@ -37,7 +36,7 @@ fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, u16), Error> {
     let salt = match parts.next() {
         Some(part) if &part.as_bytes()[..2] == b"s=" => {
             try!(base64::decode(part[2..].as_bytes())
-                .map_err(|_| Error::Protocol(Kind::InvalidField(Field::Salt))))
+                     .map_err(|_| Error::Protocol(Kind::InvalidField(Field::Salt))))
         }
         _ => {
             return Err(Error::Protocol(Kind::ExpectedField(Field::Salt)));
@@ -46,14 +45,29 @@ fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, u16), Error> {
     let iterations = match parts.next() {
         Some(part) if &part.as_bytes()[..2] == b"i=" => {
             try!(part[2..]
-                .parse()
-                .map_err(|_| Error::Protocol(Kind::InvalidField(Field::Salt))))
+                 .parse()
+                 .map_err(|_| Error::Protocol(Kind::InvalidField(Field::Iterations))))
         }
         _ => {
             return Err(Error::Protocol(Kind::ExpectedField(Field::Iterations)));
         }
     };
     Ok((nonce, salt, iterations))
+}
+
+fn parse_server_final(data: &str) -> Result<Vec<u8>, Error> {
+    if data.len() < 2 {
+        return Err(Error::Protocol(Kind::ExpectedField(Field::VerifyOrError)));
+    }
+    match &data[..2] {
+        "v=" => {
+            base64::decode(&data.as_bytes()[2..]).map_err(|_| {
+                Error::Protocol(Kind::InvalidField(Field::VerifyOrError))
+            })
+        }
+        "e=" => Err(Error::Authentication(data[2..].to_string())),
+        _ => Err(Error::Protocol(Kind::ExpectedField(Field::VerifyOrError))),
+    }
 }
 
 /// The initial state of the SCRAM mechanism. It's the entry point for a SCRAM handshake.
@@ -109,11 +123,7 @@ impl<'a> ClientFirst<'a> {
         let nonce: String = (0..NONCE_LENGTH)
             .map(move |_| {
                 let x: u8 = range.ind_sample(&mut rng);
-                if x > 43 {
-                    (x + 1) as char
-                } else {
-                    x as char
-                }
+                if x > 43 { (x + 1) as char } else { x as char }
             })
             .collect();
 
@@ -238,21 +248,10 @@ impl ServerFinal {
     ///
     /// Detailed semantics are documented in the [`Error`](enum.Error.html) type.
     pub fn handle_server_final(self, server_final: &str) -> Result<(), Error> {
-        if server_final.len() < 2 {
-            return Err(Error::Protocol(Kind::ExpectedField(Field::VerifyOrError)));
-        }
-        match &server_final[..2] {
-            "v=" => {
-                let verifier = try!(base64::decode(&server_final.as_bytes()[2..])
-                    .map_err(|_| Error::Protocol(Kind::InvalidField(Field::VerifyOrError))));
-                if self.server_signature.as_ref() == &*verifier {
-                    Ok(())
-                } else {
-                    Err(Error::InvalidServer)
-                }
-            }
-            "e=" => Err(Error::Authentication(server_final[2..].to_string())),
-            _ => Err(Error::Protocol(Kind::ExpectedField(Field::VerifyOrError))),
+        if self.server_signature.as_ref() == &*parse_server_final(server_final)? {
+            Ok(())
+        } else {
+            Err(Error::InvalidServer)
         }
     }
 }

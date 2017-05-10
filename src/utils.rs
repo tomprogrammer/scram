@@ -2,9 +2,8 @@ use std::borrow::Cow;
 
 use base64;
 use ring::digest::{digest, SHA256, SHA256_OUTPUT_LEN};
-use ring::hmac;
-use ring::hmac::{SigningKey, SigningContext, sign};
-use ring::pbkdf2::{HMAC_SHA256, derive};
+use ring::hmac::{self, SigningKey, SigningContext};
+use ring::pbkdf2::{self, HMAC_SHA256};
 
 /// Parses a part of a SCRAM message, after it has been split on commas.
 /// Checks to make sure there's a key, and then verifies its the right key.
@@ -23,7 +22,6 @@ macro_rules! parse_part {
         } else {
             return Err(Error::Protocol(Kind::ExpectedField(Field::$field)));
         }
-
     );
 }
 
@@ -32,16 +30,21 @@ macro_rules! parse_part {
 /// to hash any passwords prior to being saved.
 pub fn hash_password(password: &str, iterations: u16, salt: &[u8]) -> [u8; SHA256_OUTPUT_LEN] {
     let mut salted_password = [0u8; SHA256_OUTPUT_LEN];
-    derive(&HMAC_SHA256,
-           u32::from(iterations),
-           salt,
-           password.as_bytes(),
-           &mut salted_password);
+    pbkdf2::derive(&HMAC_SHA256,
+                   u32::from(iterations),
+                   salt,
+                   password.as_bytes(),
+                   &mut salted_password);
     salted_password
 }
 
 /// Finds the client proof and server signature based on the shared hashed key.
-pub fn find_proofs(gs2header: &Cow<'static, str>, client_first_bare: &Cow<str>, server_first: &Cow<str>, salted_password: &[u8], nonce: &str) -> ([u8;SHA256_OUTPUT_LEN], hmac::Signature) {
+pub fn find_proofs(gs2header: &Cow<'static, str>,
+                   client_first_bare: &Cow<str>,
+                   server_first: &Cow<str>,
+                   salted_password: &[u8],
+                   nonce: &str)
+                   -> ([u8; SHA256_OUTPUT_LEN], hmac::Signature) {
     fn sign_slice(key: &SigningKey, slice: &[&[u8]]) -> hmac::Signature {
         let mut signature_context = SigningContext::with_key(key);
         for item in slice {
@@ -50,9 +53,8 @@ pub fn find_proofs(gs2header: &Cow<'static, str>, client_first_bare: &Cow<str>, 
         signature_context.sign()
     }
 
-    let client_final_without_proof = format!("c={},r={}",
-                                             base64::encode(gs2header.as_bytes()),
-                                             nonce);
+    let client_final_without_proof =
+        format!("c={},r={}", base64::encode(gs2header.as_bytes()), nonce);
     let auth_message = [client_first_bare.as_bytes(),
                         b",",
                         server_first.as_bytes(),
@@ -62,16 +64,19 @@ pub fn find_proofs(gs2header: &Cow<'static, str>, client_first_bare: &Cow<str>, 
 
 
     let salted_password_signing_key = SigningKey::new(&SHA256, salted_password);
-    let client_key = sign(&salted_password_signing_key, b"Client Key");
-    let server_key = sign(&salted_password_signing_key, b"Server Key");
+    let client_key = hmac::sign(&salted_password_signing_key, b"Client Key");
+    let server_key = hmac::sign(&salted_password_signing_key, b"Server Key");
     let stored_key = digest(&SHA256, client_key.as_ref());
     let stored_key_signing_key = SigningKey::new(&SHA256, stored_key.as_ref());
     let client_signature = sign_slice(&stored_key_signing_key, &auth_message);
     let server_signature_signing_key = SigningKey::new(&SHA256, server_key.as_ref());
     let server_signature = sign_slice(&server_signature_signing_key, &auth_message);
     let mut client_proof = [0u8; SHA256_OUTPUT_LEN];
-    let xor_iter =
-        client_key.as_ref().iter().zip(client_signature.as_ref()).map(|(k, s)| k ^ s);
+    let xor_iter = client_key
+        .as_ref()
+        .iter()
+        .zip(client_signature.as_ref())
+        .map(|(k, s)| k ^ s);
     for (p, x) in client_proof.iter_mut().zip(xor_iter) {
         *p = x
     }
