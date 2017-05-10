@@ -180,7 +180,7 @@ impl<'a> ServerFirst<'a> {
     ///
     /// # Return value
     ///
-    /// This method returns only a subset of the errors defined in [`Error`](enum.Error.html):
+    /// This method returns only a subset of the errors defined in [`Error`](../enum.Error.html):
     ///
     /// * Error::Protocol
     /// * Error::UnsupportedExtension
@@ -249,7 +249,7 @@ impl ServerFinal {
     /// * A value of `Err(Error::InvalidServer)` or `Err(Error::Authentication(_))` means that the
     /// authentication request was rejected.
     ///
-    /// Detailed semantics are documented in the [`Error`](enum.Error.html) type.
+    /// Detailed semantics are documented in the [`Error`](../enum.Error.html) type.
     pub fn handle_server_final(self, server_final: &str) -> Result<(), Error> {
         if self.server_signature.as_ref() == &*parse_server_final(server_final)? {
             Ok(())
