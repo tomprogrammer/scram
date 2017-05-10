@@ -1,7 +1,7 @@
 //! # Salted Challenge Response Authentication Mechanism (SCRAM)
 //!
-//! This implementation currently provides a client for the SCRAM-SHA-256 mechanism according to
-//! RFC5802 and RFC7677. It doesn't support channel-binding.
+//! This implementation currently provides a client and a server for the SCRAM-SHA-256 mechanism
+//! according to RFC5802 and RFC7677. It doesn't support channel-binding.
 //!
 //! # Usage
 //!
@@ -25,7 +25,7 @@
 //! processing server messages can result in failure.
 //!
 //! ``` rust,no_run
-//! use scram::client::ClientFirst;
+//! use scram::ScramClient;
 //!
 //! // This function represents your I/O implementation.
 //! # #[allow(unused_variables)]
@@ -34,7 +34,7 @@
 //! }
 //!
 //! // Create a SCRAM state from the credentials.
-//! let scram = ClientFirst::new("user", "password", None).unwrap();
+//! let scram = ScramClient::new("user", "password", None).unwrap();
 //!
 //! // Get the client message and reassign the SCRAM state.
 //! let (scram, client_first) = scram.client_first();
@@ -78,7 +78,7 @@
 //! if authentication was successful or not.
 //!
 //! ```rust,no_run
-//! use scram::server::{ScramServer, AuthenticationStatus, AuthenticationProvider, PasswordInfo};
+//! use scram::{ScramServer, AuthenticationStatus, AuthenticationProvider, PasswordInfo};
 //!
 //! // Create a dummy authentication provider
 //! struct ExampleProvider;
@@ -139,5 +139,7 @@ mod error;
 pub mod client;
 pub mod server;
 
+pub use client::ScramClient;
 pub use error::{Error, Kind, Field};
+pub use server::{ScramServer, AuthenticationProvider, PasswordInfo, AuthenticationStatus};
 pub use utils::hash_password;

@@ -12,6 +12,9 @@ use utils::{hash_password, find_proofs};
 use error::{Error, Kind, Field};
 use NONCE_LENGTH;
 
+#[deprecated(since = "0.2.0", note = "Please use `ScramClient` instead. (exported at crate root)")]
+pub type ClientFirst<'a> = ScramClient<'a>;
+
 /// Parses a `server_first_message` returning a (none, salt, iterations) tuple if successful.
 fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, u16), Error> {
     if data.len() < 2 {
@@ -72,14 +75,14 @@ fn parse_server_final(data: &str) -> Result<Vec<u8>, Error> {
 
 /// The initial state of the SCRAM mechanism. It's the entry point for a SCRAM handshake.
 #[derive(Debug)]
-pub struct ClientFirst<'a> {
+pub struct ScramClient<'a> {
     gs2header: Cow<'static, str>,
     password: &'a str,
     nonce: String,
     authcid: &'a str,
 }
 
-impl<'a> ClientFirst<'a> {
+impl<'a> ScramClient<'a> {
     /// Constructs an initial state for the SCRAM mechanism using the provided credentials.
     ///
     /// # Arguments
@@ -127,7 +130,7 @@ impl<'a> ClientFirst<'a> {
             })
             .collect();
 
-        ClientFirst {
+        ScramClient {
             gs2header: gs2header,
             password: password,
             authcid: authcid,

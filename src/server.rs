@@ -28,7 +28,7 @@ pub struct PasswordInfo {
     iterations: u16,
 }
 
-/// The status of authenication after the final client message has been received by the server.
+/// The status of authentication after the final client message has been received by the server.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum AuthenticationStatus {
     /// The client has correctly authenticated, and has been authorized.
@@ -308,7 +308,6 @@ impl<'a, P: AuthenticationProvider> ClientFinal<'a, P> {
 
         let server_signature_string = format!("v={}", base64::encode(server_signature.as_ref()));
         Ok(Some(server_signature_string))
-
     }
 }
 

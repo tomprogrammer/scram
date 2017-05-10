@@ -46,8 +46,8 @@ impl server::AuthenticationProvider for TestProvider {
 
 #[test]
 fn test_simple_success() {
-    let scram_client = client::ClientFirst::new("user", "password", None).unwrap();
-    let scram_server = server::ScramServer::new(TestProvider::new());
+    let scram_client = ScramClient::new("user", "password", None).unwrap();
+    let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();
 
@@ -62,13 +62,13 @@ fn test_simple_success() {
 
     scram_client.handle_server_final(&server_final).unwrap();
 
-    assert_eq!(status, server::AuthenticationStatus::Authenticated);
+    assert_eq!(status, AuthenticationStatus::Authenticated);
 }
 
 #[test]
 fn test_bad_password() {
-    let scram_client = client::ClientFirst::new("user", "badpassword", None).unwrap();
-    let scram_server = server::ScramServer::new(TestProvider::new());
+    let scram_client = ScramClient::new("user", "badpassword", None).unwrap();
+    let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();
 
@@ -81,14 +81,14 @@ fn test_bad_password() {
     let scram_server = scram_server.handle_client_final(&client_final).unwrap();
     let (status, server_final) = scram_server.server_final();
 
-    assert_eq!(status, server::AuthenticationStatus::NotAuthenticated);
+    assert_eq!(status, AuthenticationStatus::NotAuthenticated);
     assert!(scram_client.handle_server_final(&server_final).is_err());
 }
 
 #[test]
 fn test_authorize_different() {
-    let scram_client = client::ClientFirst::new("admin", "admin_password", Some("user")).unwrap();
-    let scram_server = server::ScramServer::new(TestProvider::new());
+    let scram_client = ScramClient::new("admin", "admin_password", Some("user")).unwrap();
+    let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();
 
@@ -103,13 +103,13 @@ fn test_authorize_different() {
 
     scram_client.handle_server_final(&server_final).unwrap();
 
-    assert_eq!(status, server::AuthenticationStatus::Authenticated);
+    assert_eq!(status, AuthenticationStatus::Authenticated);
 }
 
 #[test]
 fn test_authorize_fail() {
-    let scram_client = client::ClientFirst::new("user", "password", Some("admin")).unwrap();
-    let scram_server = server::ScramServer::new(TestProvider::new());
+    let scram_client = ScramClient::new("user", "password", Some("admin")).unwrap();
+    let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();
 
@@ -122,15 +122,15 @@ fn test_authorize_fail() {
     let scram_server = scram_server.handle_client_final(&client_final).unwrap();
     let (status, server_final) = scram_server.server_final();
 
-    assert_eq!(status, server::AuthenticationStatus::NotAuthorized);
+    assert_eq!(status, AuthenticationStatus::NotAuthorized);
     assert!(scram_client.handle_server_final(&server_final).is_err());
 }
 
 #[test]
 fn test_authorize_non_existent() {
-    let scram_client = client::ClientFirst::new("admin", "admin_password", Some("nonexistent"))
+    let scram_client = ScramClient::new("admin", "admin_password", Some("nonexistent"))
         .unwrap();
-    let scram_server = server::ScramServer::new(TestProvider::new());
+    let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();
 
@@ -143,14 +143,14 @@ fn test_authorize_non_existent() {
     let scram_server = scram_server.handle_client_final(&client_final).unwrap();
     let (status, server_final) = scram_server.server_final();
 
-    assert_eq!(status, server::AuthenticationStatus::NotAuthorized);
+    assert_eq!(status, AuthenticationStatus::NotAuthorized);
     assert!(scram_client.handle_server_final(&server_final).is_err());
 }
 
 #[test]
 fn test_invalid_user() {
-    let scram_client = client::ClientFirst::new("nobody", "password", None).unwrap();
-    let scram_server = server::ScramServer::new(TestProvider::new());
+    let scram_client = ScramClient::new("nobody", "password", None).unwrap();
+    let scram_server = ScramServer::new(TestProvider::new());
 
     let (_, client_first) = scram_client.client_first();
 
@@ -159,8 +159,8 @@ fn test_invalid_user() {
 
 #[test]
 fn test_empty_username() {
-    let scram_client = client::ClientFirst::new("", "password", None).unwrap();
-    let scram_server = server::ScramServer::new(TestProvider::new());
+    let scram_client = ScramClient::new("", "password", None).unwrap();
+    let scram_server = ScramServer::new(TestProvider::new());
 
     let (_, client_first) = scram_client.client_first();
 
@@ -169,8 +169,8 @@ fn test_empty_username() {
 
 #[test]
 fn test_empty_password() {
-    let scram_client = client::ClientFirst::new("user", "", None).unwrap();
-    let scram_server = server::ScramServer::new(TestProvider::new());
+    let scram_client = ScramClient::new("user", "", None).unwrap();
+    let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();
 
@@ -183,6 +183,6 @@ fn test_empty_password() {
     let scram_server = scram_server.handle_client_final(&client_final).unwrap();
     let (status, server_final) = scram_server.server_final();
 
-    assert_eq!(status, server::AuthenticationStatus::NotAuthenticated);
+    assert_eq!(status, AuthenticationStatus::NotAuthenticated);
     assert!(scram_client.handle_server_final(&server_final).is_err());
 }
