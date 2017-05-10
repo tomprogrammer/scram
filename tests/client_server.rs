@@ -12,8 +12,8 @@ struct TestProvider {
 
 impl TestProvider {
     pub fn new() -> Self {
-        let user_password = hash_password("password", 4096, "salt".as_bytes());
-        let admin_password = hash_password("admin_password", 8192, "messy".as_bytes());
+        let user_password = hash_password("password", 4096, b"salt");
+        let admin_password = hash_password("admin_password", 8192, b"messy");
         TestProvider {
             user_password: user_password,
             admin_password: admin_password,

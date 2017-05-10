@@ -59,9 +59,9 @@
 //!
 //! ## Server
 //!
-//! The server is created to respond to incoming challenges from a client.  A typical usage pattern,
-//! with a default provider is shown below.  In production, you would implement an AuthenticationProvider
-//! that could look up user credentials based on a username
+//! The server is created to respond to incoming challenges from a client. A typical usage pattern,
+//! with a default provider is shown below. In production, you would implement an
+//! `AuthenticationProvider` that could look up user credentials based on a username
 //!
 //! The server and the client exchange four messages using the SCRAM mechanism. There is a rust type
 //! for each one of them. Calling the methods

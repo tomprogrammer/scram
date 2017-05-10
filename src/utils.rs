@@ -8,7 +8,7 @@ use ring::pbkdf2::{self, HMAC_SHA256};
 /// Parses a part of a SCRAM message, after it has been split on commas.
 /// Checks to make sure there's a key, and then verifies its the right key.
 /// Returns everything after the first '='.
-/// Returns a ExpectedField error when one of the above conditions fails.
+/// Returns a `ExpectedField` error when one of the above conditions fails.
 macro_rules! parse_part {
     ($iter: expr, $field: ident, $key: expr) => (
         if let Some(part) = $iter.next() {

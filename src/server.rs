@@ -93,14 +93,12 @@ fn parse_client_first(data: &str) -> Result<(&str, Option<&str>, &str), Error> {
 
     // Authzid
     let authzid = if let Some(part) = parts.next() {
-        if part.len() == 0 {
+        if part.is_empty() {
             None
-        } else if part.len() < 2 {
+        } else if part.len() < 2 || &part.as_bytes()[..2] != b"a=" {
             return Err(Error::Protocol(Kind::ExpectedField(Field::Authzid)));
-        } else if &part.as_bytes()[..2] == b"a=" {
-            Some(&part[2..])
         } else {
-            return Err(Error::Protocol(Kind::ExpectedField(Field::Authzid)));
+            Some(&part[2..])
         }
     } else {
         return Err(Error::Protocol(Kind::ExpectedField(Field::Authzid)));
@@ -252,29 +250,29 @@ impl<'a, P: AuthenticationProvider> ClientFinal<'a, P> {
         if let Some(signature) = try!(self.verify_proof(proof)) {
             if let Some(authzid) = self.authzid {
                 if self.provider.authorize(self.authcid, authzid) {
-                    Ok((ServerFinal {
+                    Ok(ServerFinal {
                         status: AuthenticationStatus::Authenticated,
                         signature: signature,
-                    }))
+                    })
                 } else {
-                    Ok((ServerFinal {
+                    Ok(ServerFinal {
                         status: AuthenticationStatus::NotAuthorized,
                         signature: format!("e=User '{}' not authorized to act as '{}'",
                                            self.authcid,
                                            authzid),
-                    }))
+                    })
                 }
             } else {
-                Ok((ServerFinal {
+                Ok(ServerFinal {
                     status: AuthenticationStatus::Authenticated,
                     signature: signature,
-                }))
+                })
             }
         } else {
-            Ok((ServerFinal {
+            Ok(ServerFinal {
                 status: AuthenticationStatus::NotAuthenticated,
                 signature: "e=Invalid Password".to_string(),
-            }))
+            })
         }
     }
 
