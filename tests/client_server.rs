@@ -1,13 +1,13 @@
 extern crate scram;
 extern crate rand;
+extern crate ring;
 
+use ring::digest::SHA256_OUTPUT_LEN;
 use scram::*;
 
-const SHA256_LEN: usize = 32;
-
 struct TestProvider {
-    user_password: [u8; SHA256_LEN],
-    admin_password: [u8; SHA256_LEN]
+    user_password: [u8; SHA256_OUTPUT_LEN],
+    admin_password: [u8; SHA256_OUTPUT_LEN],
 }
 
 impl TestProvider {

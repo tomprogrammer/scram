@@ -6,11 +6,12 @@ use rand::distributions::IndependentSample;
 use rand::distributions::range::Range;
 use rand::os::OsRng;
 use rand::Rng;
+use ring::digest::SHA256_OUTPUT_LEN;
 use ring::hmac;
 
 use utils::{hash_password, find_proofs};
 use error::{Error, Kind, Field};
-use ::{NONCE_LENGTH, SHA256_LEN};
+use NONCE_LENGTH;
 
 /// Parses a `server_first_message` returning a (none, salt, iterations) tuple if successful.
 fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, u16), Error> {
@@ -179,7 +180,7 @@ impl<'a> ServerFirst<'a> {
 
         let salted_password = hash_password(self.password, iterations, &salt);
 
-        let (client_proof, server_signature): ([u8; SHA256_LEN], hmac::Signature) =
+        let (client_proof, server_signature): ([u8; SHA256_OUTPUT_LEN], hmac::Signature) =
             find_proofs(&self.gs2header,
                         &self.client_first_bare.into(),
                         &server_first.into(),

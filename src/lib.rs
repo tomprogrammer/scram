@@ -132,8 +132,6 @@ extern crate ring;
 
 /// The length of the client nonce in characters/bytes.
 const NONCE_LENGTH: usize = 24;
-/// The length of a SHA-256 hash in bytes.
-const SHA256_LEN: usize = 32;
 
 #[macro_use]
 mod utils;
