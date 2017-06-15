@@ -137,9 +137,10 @@ impl<P: AuthenticationProvider> ScramServer<P> {
     /// and the requested user exists, then this will progress to the next stage of the
     /// authentication process, [`ServerFirst`](struct.ServerFirst.html). Otherwise, it will return
     /// an error.
-    pub fn handle_client_first<'a>(&'a self,
-                                   client_first: &'a str)
-                                   -> Result<ServerFirst<'a, P>, Error> {
+    pub fn handle_client_first<'a>(
+        &'a self,
+        client_first: &'a str,
+    ) -> Result<ServerFirst<'a, P>, Error> {
         let (authcid, authzid, client_nonce) = try!(parse_client_first(client_first));
         let password_info = if let Some(info) = self.provider.get_password_for(authcid) {
             info
@@ -198,23 +199,25 @@ impl<'a, P: AuthenticationProvider> ServerFirst<'a, P> {
         };
         let client_first_bare: Cow<'static, str> =
             format!("n={},r={}", self.authcid, self.client_nonce).into();
-        let server_first: Cow<'static, str> =
-            format!("r={},s={},i={}",
-                    nonce,
-                    base64::encode(self.password_info.salt.as_slice()),
-                    self.password_info.iterations)
-                    .into();
-        (ClientFinal {
-             hashed_password: self.password_info.hashed_password,
-             nonce: nonce,
-             gs2header: gs2header,
-             client_first_bare: client_first_bare,
-             server_first: server_first.clone(),
-             authcid: self.authcid.into(),
-             authzid: self.authzid.map(|a| a.into()),
-             provider: self.provider,
-         },
-         server_first.into_owned())
+        let server_first: Cow<'static, str> = format!(
+            "r={},s={},i={}",
+            nonce,
+            base64::encode(self.password_info.salt.as_slice()),
+            self.password_info.iterations
+        ).into();
+        (
+            ClientFinal {
+                hashed_password: self.password_info.hashed_password,
+                nonce: nonce,
+                gs2header: gs2header,
+                client_first_bare: client_first_bare,
+                server_first: server_first.clone(),
+                authcid: self.authcid.into(),
+                authzid: self.authzid.map(|a| a.into()),
+                provider: self.provider,
+            },
+            server_first.into_owned(),
+        )
     }
 }
 
@@ -257,9 +260,11 @@ impl<'a, P: AuthenticationProvider> ClientFinal<'a, P> {
                 } else {
                     Ok(ServerFinal {
                         status: AuthenticationStatus::NotAuthorized,
-                        signature: format!("e=User '{}' not authorized to act as '{}'",
-                                           self.authcid,
-                                           authzid),
+                        signature: format!(
+                            "e=User '{}' not authorized to act as '{}'",
+                            self.authcid,
+                            authzid
+                        ),
                     })
                 }
             } else {
@@ -290,11 +295,13 @@ impl<'a, P: AuthenticationProvider> ClientFinal<'a, P> {
     /// Checks that the proof from the client matches our saved credentials
     fn verify_proof(&self, proof: &str) -> Result<Option<String>, Error> {
         let (client_proof, server_signature): ([u8; SHA256_OUTPUT_LEN], hmac::Signature) =
-            find_proofs(&self.gs2header,
-                        &self.client_first_bare,
-                        &self.server_first,
-                        self.hashed_password.as_slice(),
-                        &self.nonce);
+            find_proofs(
+                &self.gs2header,
+                &self.client_first_bare,
+                &self.server_first,
+                self.hashed_password.as_slice(),
+                &self.nonce,
+            );
         let proof = if let Ok(proof) = base64::decode(proof.as_bytes()) {
             proof
         } else {
@@ -351,29 +358,49 @@ mod tests {
 
     #[test]
     fn test_parse_client_first_missing_fields() {
-        assert_eq!(parse_client_first("n,,n=user").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::Nonce)));
-        assert_eq!(parse_client_first("n,,r=user").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::Authcid)));
-        assert_eq!(parse_client_first("n,n=user,r=abc").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::Authzid)));
-        assert_eq!(parse_client_first(",,n=user,r=abc").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::ChannelBinding)));
-        assert_eq!(parse_client_first("").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::ChannelBinding)));
-        assert_eq!(parse_client_first(",,,").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::ChannelBinding)));
+        assert_eq!(
+            parse_client_first("n,,n=user").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::Nonce))
+        );
+        assert_eq!(
+            parse_client_first("n,,r=user").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::Authcid))
+        );
+        assert_eq!(
+            parse_client_first("n,n=user,r=abc").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::Authzid))
+        );
+        assert_eq!(
+            parse_client_first(",,n=user,r=abc").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::ChannelBinding))
+        );
+        assert_eq!(
+            parse_client_first("").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::ChannelBinding))
+        );
+        assert_eq!(
+            parse_client_first(",,,").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::ChannelBinding))
+        );
     }
     #[test]
     fn test_parse_client_first_invalid_data() {
-        assert_eq!(parse_client_first("a,,n=user,r=abc").unwrap_err(),
-                   Error::Protocol(Kind::InvalidField(Field::ChannelBinding)));
-        assert_eq!(parse_client_first("p,,n=user,r=abc").unwrap_err(),
-                   Error::UnsupportedExtension);
-        assert_eq!(parse_client_first("nn,,n=user,r=abc").unwrap_err(),
-                   Error::Protocol(Kind::InvalidField(Field::ChannelBinding)));
-        assert_eq!(parse_client_first("n,,n,r=abc").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::Authcid)));
+        assert_eq!(
+            parse_client_first("a,,n=user,r=abc").unwrap_err(),
+            Error::Protocol(Kind::InvalidField(Field::ChannelBinding))
+        );
+        assert_eq!(
+            parse_client_first("p,,n=user,r=abc").unwrap_err(),
+            Error::UnsupportedExtension
+        );
+        assert_eq!(
+            parse_client_first("nn,,n=user,r=abc").unwrap_err(),
+            Error::Protocol(Kind::InvalidField(Field::ChannelBinding))
+        );
+        assert_eq!(
+            parse_client_first("n,,n,r=abc").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::Authcid))
+        );
     }
 
     #[test]
@@ -391,17 +418,29 @@ mod tests {
 
     #[test]
     fn test_parse_client_final_missing_fields() {
-        assert_eq!(parse_client_final("c=whatever,r=something").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::Proof)));
-        assert_eq!(parse_client_final("c=whatever,p=words").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::Nonce)));
-        assert_eq!(parse_client_final("c=whatever").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::Nonce)));
-        assert_eq!(parse_client_final("c=").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::Nonce)));
-        assert_eq!(parse_client_final("").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::GS2Header)));
-        assert_eq!(parse_client_final("r=anonce").unwrap_err(),
-                   Error::Protocol(Kind::ExpectedField(Field::GS2Header)));
+        assert_eq!(
+            parse_client_final("c=whatever,r=something").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::Proof))
+        );
+        assert_eq!(
+            parse_client_final("c=whatever,p=words").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::Nonce))
+        );
+        assert_eq!(
+            parse_client_final("c=whatever").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::Nonce))
+        );
+        assert_eq!(
+            parse_client_final("c=").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::Nonce))
+        );
+        assert_eq!(
+            parse_client_final("").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::GS2Header))
+        );
+        assert_eq!(
+            parse_client_final("r=anonce").unwrap_err(),
+            Error::Protocol(Kind::ExpectedField(Field::GS2Header))
+        );
     }
 }

@@ -25,14 +25,18 @@ impl server::AuthenticationProvider for TestProvider {
     fn get_password_for(&self, username: &str) -> Option<server::PasswordInfo> {
         match username {
             "user" => {
-                Some(server::PasswordInfo::new(self.user_password.to_vec(),
-                                               4096,
-                                               "salt".bytes().collect()))
+                Some(server::PasswordInfo::new(
+                    self.user_password.to_vec(),
+                    4096,
+                    "salt".bytes().collect(),
+                ))
             }
             "admin" => {
-                Some(server::PasswordInfo::new(self.admin_password.to_vec(),
-                                               8192,
-                                               "messy".bytes().collect()))
+                Some(server::PasswordInfo::new(
+                    self.admin_password.to_vec(),
+                    8192,
+                    "messy".bytes().collect(),
+                ))
             }
             _ => None,
         }
@@ -128,8 +132,7 @@ fn test_authorize_fail() {
 
 #[test]
 fn test_authorize_non_existent() {
-    let scram_client = ScramClient::new("admin", "admin_password", Some("nonexistent"))
-        .unwrap();
+    let scram_client = ScramClient::new("admin", "admin_password", Some("nonexistent")).unwrap();
     let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();

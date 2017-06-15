@@ -38,8 +38,9 @@ fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, u16), Error> {
     };
     let salt = match parts.next() {
         Some(part) if &part.as_bytes()[..2] == b"s=" => {
-            try!(base64::decode(part[2..].as_bytes())
-                     .map_err(|_| Error::Protocol(Kind::InvalidField(Field::Salt))))
+            try!(base64::decode(part[2..].as_bytes()).map_err(|_| {
+                Error::Protocol(Kind::InvalidField(Field::Salt))
+            }))
         }
         _ => {
             return Err(Error::Protocol(Kind::ExpectedField(Field::Salt)));
@@ -47,9 +48,9 @@ fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, u16), Error> {
     };
     let iterations = match parts.next() {
         Some(part) if &part.as_bytes()[..2] == b"i=" => {
-            try!(part[2..]
-                 .parse()
-                 .map_err(|_| Error::Protocol(Kind::InvalidField(Field::Iterations))))
+            try!(part[2..].parse().map_err(|_| {
+                Error::Protocol(Kind::InvalidField(Field::Iterations))
+            }))
         }
         _ => {
             return Err(Error::Protocol(Kind::ExpectedField(Field::Iterations)));
@@ -113,11 +114,12 @@ impl<'a> ScramClient<'a> {
     /// the same as the authenticated username.
     /// * rng: A random number generator used to generate random nonces. Please only use a
     /// cryptographically secure random number generator!
-    pub fn with_rng<R: Rng>(authcid: &'a str,
-                            password: &'a str,
-                            authzid: Option<&'a str>,
-                            mut rng: R)
-                            -> Self {
+    pub fn with_rng<R: Rng>(
+        authcid: &'a str,
+        password: &'a str,
+        authzid: Option<&'a str>,
+        mut rng: R,
+    ) -> Self {
         let gs2header: Cow<'static, str> = match authzid {
             Some(authzid) => format!("n,a={},", authzid).into(),
             None => "n,,".into(),
@@ -194,16 +196,20 @@ impl<'a> ServerFirst<'a> {
         let salted_password = hash_password(self.password, iterations, &salt);
 
         let (client_proof, server_signature): ([u8; SHA256_OUTPUT_LEN], hmac::Signature) =
-            find_proofs(&self.gs2header,
-                        &self.client_first_bare.into(),
-                        &server_first.into(),
-                        &salted_password,
-                        nonce);
+            find_proofs(
+                &self.gs2header,
+                &self.client_first_bare.into(),
+                &server_first.into(),
+                &salted_password,
+                nonce,
+            );
 
-        let client_final = format!("c={},r={},p={}",
-                                   base64::encode(self.gs2header.as_bytes()),
-                                   nonce,
-                                   base64::encode(&client_proof));
+        let client_final = format!(
+            "c={},r={},p={}",
+            base64::encode(self.gs2header.as_bytes()),
+            nonce,
+            base64::encode(&client_proof)
+        );
         Ok(ClientFinal {
             server_signature: server_signature,
             client_final: client_final,

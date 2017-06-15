@@ -49,7 +49,7 @@ pub enum Field {
     /// GS2Header
     GS2Header,
     /// Client Proof
-    Proof
+    Proof,
 }
 
 impl fmt::Display for Error {

@@ -12,17 +12,17 @@
 //!
 //! At first the user and the password must be supplied using either of the methods
 //! [`ClientFirst::new`](client/struct.ClientFirst.html#method.new) or
-//! [`ClientFirst::with_rng`](client/struct.ClientFirst.html#method.with_rng). These methods return a SCRAM
-//! state you can use to compute the first client message.
+//! [`ClientFirst::with_rng`](client/struct.ClientFirst.html#method.with_rng). These methods return
+//! a SCRAM state you can use to compute the first client message.
 //!
 //! The server and the client exchange four messages using the SCRAM mechanism. There is a rust type
 //! for each one of them. Calling the methods
 //! [`client_first`](client/struct.ClientFirst.html#method.client_first),
 //! [`handle_server_first`](client/struct.ServerFirst.html#method.handle_server_first),
 //! [`client_final`](client/struct.ClientFinal.html#method.client_final) and
-//! [`handle_server_final`](client/struct.ServerFinal.html#method.handle_server_final) on the different
-//! types advances the SCRAM handshake step by step. Computing client messages never fails but
-//! processing server messages can result in failure.
+//! [`handle_server_final`](client/struct.ServerFinal.html#method.handle_server_final) on the
+//! different types advances the SCRAM handshake step by step. Computing client messages never fails
+//! but processing server messages can result in failure.
 //!
 //! ``` rust,no_run
 //! use scram::ScramClient;

@@ -30,21 +30,24 @@ macro_rules! parse_part {
 /// to hash any passwords prior to being saved.
 pub fn hash_password(password: &str, iterations: u16, salt: &[u8]) -> [u8; SHA256_OUTPUT_LEN] {
     let mut salted_password = [0u8; SHA256_OUTPUT_LEN];
-    pbkdf2::derive(&HMAC_SHA256,
-                   u32::from(iterations),
-                   salt,
-                   password.as_bytes(),
-                   &mut salted_password);
+    pbkdf2::derive(
+        &HMAC_SHA256,
+        u32::from(iterations),
+        salt,
+        password.as_bytes(),
+        &mut salted_password,
+    );
     salted_password
 }
 
 /// Finds the client proof and server signature based on the shared hashed key.
-pub fn find_proofs(gs2header: &Cow<'static, str>,
-                   client_first_bare: &Cow<str>,
-                   server_first: &Cow<str>,
-                   salted_password: &[u8],
-                   nonce: &str)
-                   -> ([u8; SHA256_OUTPUT_LEN], hmac::Signature) {
+pub fn find_proofs(
+    gs2header: &Cow<'static, str>,
+    client_first_bare: &Cow<str>,
+    server_first: &Cow<str>,
+    salted_password: &[u8],
+    nonce: &str,
+) -> ([u8; SHA256_OUTPUT_LEN], hmac::Signature) {
     fn sign_slice(key: &SigningKey, slice: &[&[u8]]) -> hmac::Signature {
         let mut signature_context = SigningContext::with_key(key);
         for item in slice {
@@ -55,11 +58,13 @@ pub fn find_proofs(gs2header: &Cow<'static, str>,
 
     let client_final_without_proof =
         format!("c={},r={}", base64::encode(gs2header.as_bytes()), nonce);
-    let auth_message = [client_first_bare.as_bytes(),
-                        b",",
-                        server_first.as_bytes(),
-                        b",",
-                        client_final_without_proof.as_bytes()];
+    let auth_message = [
+        client_first_bare.as_bytes(),
+        b",",
+        server_first.as_bytes(),
+        b",",
+        client_final_without_proof.as_bytes(),
+    ];
 
 
 
