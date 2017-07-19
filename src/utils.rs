@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use base64;
 use ring::digest::{digest, SHA256, SHA256_OUTPUT_LEN};
 use ring::hmac::{self, SigningKey, SigningContext};
-use ring::pbkdf2::{self, HMAC_SHA256};
+use ring::pbkdf2;
 
 /// Parses a part of a SCRAM message, after it has been split on commas.
 /// Checks to make sure there's a key, and then verifies its the right key.
@@ -31,7 +31,7 @@ macro_rules! parse_part {
 pub fn hash_password(password: &str, iterations: u16, salt: &[u8]) -> [u8; SHA256_OUTPUT_LEN] {
     let mut salted_password = [0u8; SHA256_OUTPUT_LEN];
     pbkdf2::derive(
-        &HMAC_SHA256,
+        &SHA256,
         u32::from(iterations),
         salt,
         password.as_bytes(),
