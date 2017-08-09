@@ -1,7 +1,8 @@
 //! # Salted Challenge Response Authentication Mechanism (SCRAM)
 //!
 //! This implementation currently provides a client and a server for the SCRAM-SHA-256 mechanism
-//! according to RFC5802 and RFC7677. It doesn't support channel-binding.
+//! according to [RFC5802](https://tools.ietf.org/html/rfc5802) and
+//! [RFC7677](https://tools.ietf.org/html/rfc7677). It doesn't support channel-binding.
 //!
 //! # Usage
 //!
