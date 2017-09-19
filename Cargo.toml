@@ -12,4 +12,4 @@ version = "0.2.1"
 [dependencies]
 base64 = "0.6"
 rand = "0.3"
-ring = "0.11"
+ring = "0.12"
