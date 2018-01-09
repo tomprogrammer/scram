@@ -1,3 +1,9 @@
+Version 0.2.2 (2018-01-09)
+==========================
+
+* Update `ring` to version `0.13.0-alpha` since previous versions fail to build.
+* Update `rand` and `base64` to their latest version.
+
 Version 0.2.1 (2017-07-19)
 ==========================
 Update `ring` to version `0.11` and `base64` to `0.6`.
