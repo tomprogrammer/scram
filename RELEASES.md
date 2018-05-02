@@ -1,4 +1,9 @@
-Version 0.2.2 (2018-01-09)
+Version 0.2.4 (2018-05-02)
+==========================
+
+* Downgrade `ring` to version `0.12.1` as per recommendation from its author.
+
+Version 0.2.3 (2018-01-09)
 ==========================
 
 * Update `ring` to version `0.13.0-alpha` since previous versions fail to build.
