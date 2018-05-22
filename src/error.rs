@@ -42,7 +42,7 @@ pub enum Field {
     VerifyOrError,
     /// Channel Binding
     ChannelBinding,
-    /// Authtorization ID
+    /// Authorization ID
     Authzid,
     /// Authcid
     Authcid,
