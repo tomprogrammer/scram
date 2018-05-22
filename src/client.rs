@@ -129,10 +129,10 @@ impl<'a> ScramClient<'a> {
             .collect();
 
         ScramClient {
-            gs2header: gs2header,
-            password: password,
-            authcid: authcid,
-            nonce: nonce,
+            gs2header,
+            password,
+            authcid,
+            nonce,
         }
     }
 
@@ -154,7 +154,7 @@ impl<'a> ScramClient<'a> {
             gs2header: self.gs2header,
             password: self.password,
             client_nonce: self.nonce,
-            client_first_bare: client_first_bare,
+            client_first_bare,
         };
         (server_first, client_first)
     }
@@ -203,8 +203,8 @@ impl<'a> ServerFirst<'a> {
             base64::encode(&client_proof)
         );
         Ok(ClientFinal {
-            server_signature: server_signature,
-            client_final: client_final,
+            server_signature,
+            client_final,
         })
     }
 }

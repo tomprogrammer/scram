@@ -45,9 +45,9 @@ impl PasswordInfo {
     /// already been hashed using the given salt and iterations.
     pub fn new(hashed_password: Vec<u8>, iterations: u16, salt: Vec<u8>) -> Self {
         PasswordInfo {
-            hashed_password: hashed_password,
-            iterations: iterations,
-            salt: salt,
+            hashed_password,
+            iterations,
+            salt,
         }
     }
 }
@@ -130,7 +130,7 @@ fn parse_client_final(data: &str) -> Result<(&str, &str, &str), Error> {
 impl<P: AuthenticationProvider> ScramServer<P> {
     /// Creates a new `ScramServer` using the given authentication provider.
     pub fn new(provider: P) -> Self {
-        ScramServer { provider: provider }
+        ScramServer { provider }
     }
 
     /// Handle a challenge message sent by the client to the server. If the message is well formed,
@@ -148,11 +148,11 @@ impl<P: AuthenticationProvider> ScramServer<P> {
             return Err(Error::InvalidUser(authcid.to_string()));
         };
         Ok(ServerFirst {
-            client_nonce: client_nonce,
-            authcid: authcid,
-            authzid: authzid,
+            client_nonce,
+            authcid,
+            authzid,
             provider: &self.provider,
-            password_info: password_info,
+            password_info,
         })
     }
 }
@@ -213,9 +213,9 @@ impl<'a, P: AuthenticationProvider> ServerFirst<'a, P> {
         (
             ClientFinal {
                 hashed_password: self.password_info.hashed_password,
-                nonce: nonce,
-                gs2header: gs2header,
-                client_first_bare: client_first_bare,
+                nonce,
+                gs2header,
+                client_first_bare,
                 server_first: server_first.clone(),
                 authcid: self.authcid.into(),
                 authzid: self.authzid.map(|a| a.into()),
@@ -260,7 +260,7 @@ impl<'a, P: AuthenticationProvider> ClientFinal<'a, P> {
                 if self.provider.authorize(self.authcid, authzid) {
                     Ok(ServerFinal {
                         status: AuthenticationStatus::Authenticated,
-                        signature: signature,
+                        signature,
                     })
                 } else {
                     Ok(ServerFinal {
@@ -274,7 +274,7 @@ impl<'a, P: AuthenticationProvider> ClientFinal<'a, P> {
             } else {
                 Ok(ServerFinal {
                     status: AuthenticationStatus::Authenticated,
-                    signature: signature,
+                    signature,
                 })
             }
         } else {
