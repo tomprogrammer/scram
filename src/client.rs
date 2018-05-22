@@ -2,8 +2,7 @@ use std::borrow::Cow;
 use std::io;
 
 use base64;
-use rand::distributions::range::Range;
-use rand::distributions::IndependentSample;
+use rand::distributions::{Distribution, Uniform};
 use rand::{OsRng, Rng};
 use ring::digest::SHA256_OUTPUT_LEN;
 use ring::hmac;
@@ -116,18 +115,11 @@ impl<'a> ScramClient<'a> {
             Some(authzid) => format!("n,a={},", authzid).into(),
             None => "n,,".into(),
         };
-        let range = Range::new(33, 125);
-        let nonce: String = (0..NONCE_LENGTH)
-            .map(move |_| {
-                let x: u8 = range.ind_sample(&mut rng);
-                if x > 43 {
-                    (x + 1) as char
-                } else {
-                    x as char
-                }
-            })
+        let nonce: String = Uniform::from(33..125)
+            .sample_iter(&mut rng)
+            .map(|x: u8| if x > 43 { (x + 1) as char } else { x as char })
+            .take(NONCE_LENGTH)
             .collect();
-
         ScramClient {
             gs2header,
             password,

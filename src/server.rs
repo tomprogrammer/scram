@@ -2,8 +2,7 @@ use std::borrow::Cow;
 use std::io;
 
 use base64;
-use rand::distributions::range::Range;
-use rand::distributions::IndependentSample;
+use rand::distributions::{Distribution, Uniform};
 use rand::{OsRng, Rng};
 use ring::digest::SHA256_OUTPUT_LEN;
 use ring::hmac;
@@ -183,19 +182,14 @@ impl<'a, P: AuthenticationProvider> ServerFirst<'a, P> {
     /// instead of universally in [`ScramServer`](struct.ScramServer.html) for increased
     /// flexibility, and also to keep `ScramServer` immutable.
     pub fn server_first_with_rng<R: Rng>(self, rng: &mut R) -> (ClientFinal<'a, P>, String) {
-        let range = Range::new(33, 125);
-        let server_nonce: String = (0..NONCE_LENGTH)
-            .map(move |_| {
-                let x: u8 = range.ind_sample(&mut *rng);
-                if x > 43 {
-                    (x + 1) as char
-                } else {
-                    x as char
-                }
-            })
-            .collect();
-        let mut nonce = self.client_nonce.to_string();
-        nonce.push_str(&server_nonce);
+        let mut nonce = String::with_capacity(self.client_nonce.len() + NONCE_LENGTH);
+        nonce.push_str(self.client_nonce);
+        nonce.extend(
+            Uniform::from(33..125)
+                .sample_iter(rng)
+                .map(|x: u8| if x > 43 { (x + 1) as char } else { x as char })
+                .take(NONCE_LENGTH),
+        );
 
         let gs2header: Cow<'static, str> = match self.authzid {
             Some(authzid) => format!("n,a={},", authzid).into(),
