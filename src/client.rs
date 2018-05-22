@@ -195,8 +195,8 @@ impl<'a> ServerFirst<'a> {
         let (client_proof, server_signature): ([u8; SHA256_OUTPUT_LEN], hmac::Signature) =
             find_proofs(
                 &self.gs2header,
-                &self.client_first_bare.into(),
-                &server_first.into(),
+                &self.client_first_bare,
+                &server_first,
                 &salted_password,
                 nonce,
             );

@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use base64;
 use ring::digest::{digest, SHA256, SHA256_OUTPUT_LEN};
 use ring::hmac::{self, SigningContext, SigningKey};
@@ -42,9 +40,9 @@ pub fn hash_password(password: &str, iterations: u16, salt: &[u8]) -> [u8; SHA25
 
 /// Finds the client proof and server signature based on the shared hashed key.
 pub fn find_proofs(
-    gs2header: &Cow<'static, str>,
-    client_first_bare: &Cow<str>,
-    server_first: &Cow<str>,
+    gs2header: &str,
+    client_first_bare: &str,
+    server_first: &str,
     salted_password: &[u8],
     nonce: &str,
 ) -> ([u8; SHA256_OUTPUT_LEN], hmac::Signature) {
