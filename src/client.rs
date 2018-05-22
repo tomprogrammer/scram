@@ -37,20 +37,16 @@ fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, u16), Error> {
         }
     };
     let salt = match parts.next() {
-        Some(part) if &part.as_bytes()[..2] == b"s=" => try!(
-            base64::decode(part[2..].as_bytes())
-                .map_err(|_| Error::Protocol(Kind::InvalidField(Field::Salt)))
-        ),
+        Some(part) if &part.as_bytes()[..2] == b"s=" => base64::decode(part[2..].as_bytes())
+            .map_err(|_| Error::Protocol(Kind::InvalidField(Field::Salt)))?,
         _ => {
             return Err(Error::Protocol(Kind::ExpectedField(Field::Salt)));
         }
     };
     let iterations = match parts.next() {
-        Some(part) if &part.as_bytes()[..2] == b"i=" => try!(
-            part[2..]
-                .parse()
-                .map_err(|_| Error::Protocol(Kind::InvalidField(Field::Iterations)))
-        ),
+        Some(part) if &part.as_bytes()[..2] == b"i=" => part[2..]
+            .parse()
+            .map_err(|_| Error::Protocol(Kind::InvalidField(Field::Iterations)))?,
         _ => {
             return Err(Error::Protocol(Kind::ExpectedField(Field::Iterations)));
         }
@@ -94,7 +90,7 @@ impl<'a> ScramClient<'a> {
     ///
     /// An I/O error is returned if the internal random number generator couldn't be constructed.
     pub fn new(authcid: &'a str, password: &'a str, authzid: Option<&'a str>) -> io::Result<Self> {
-        let rng = try!(OsRng::new());
+        let rng = OsRng::new()?;
         Ok(Self::with_rng(authcid, password, authzid, rng))
     }
 
@@ -187,7 +183,7 @@ impl<'a> ServerFirst<'a> {
     /// * Error::Protocol
     /// * Error::UnsupportedExtension
     pub fn handle_server_first(self, server_first: &str) -> Result<ClientFinal, Error> {
-        let (nonce, salt, iterations) = try!(parse_server_first(server_first));
+        let (nonce, salt, iterations) = parse_server_first(server_first)?;
         if !nonce.starts_with(&self.client_nonce) {
             return Err(Error::Protocol(Kind::InvalidNonce));
         }
@@ -200,7 +196,6 @@ impl<'a> ServerFirst<'a> {
                 &salted_password,
                 nonce,
             );
-
         let client_final = format!(
             "c={},r={},p={}",
             base64::encode(self.gs2header.as_bytes()),

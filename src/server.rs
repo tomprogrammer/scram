@@ -141,7 +141,7 @@ impl<P: AuthenticationProvider> ScramServer<P> {
         &'a self,
         client_first: &'a str,
     ) -> Result<ServerFirst<'a, P>, Error> {
-        let (authcid, authzid, client_nonce) = try!(parse_client_first(client_first));
+        let (authcid, authzid, client_nonce) = parse_client_first(client_first)?;
         let password_info = if let Some(info) = self.provider.get_password_for(authcid) {
             info
         } else {
@@ -175,7 +175,8 @@ impl<'a, P: AuthenticationProvider> ServerFirst<'a, P> {
     /// when it cannot initialize the OS's randomness source. See the documentation on `OsRng` for
     /// more information.
     pub fn server_first(self) -> io::Result<(ClientFinal<'a, P>, String)> {
-        Ok(self.server_first_with_rng(&mut try!(OsRng::new())))
+        let mut rng = OsRng::new()?;
+        Ok(self.server_first_with_rng(&mut rng))
     }
 
     /// Creates the server's first message in response to the client's first message, with the
@@ -247,14 +248,14 @@ impl<'a, P: AuthenticationProvider> ClientFinal<'a, P> {
     /// succeeded, use [`get_status()`](struct.ServerFinal.html#method.get_status) on the return
     /// value.
     pub fn handle_client_final(self, client_final: &str) -> Result<ServerFinal, Error> {
-        let (gs2header_enc, nonce, proof) = try!(parse_client_final(client_final));
+        let (gs2header_enc, nonce, proof) = parse_client_final(client_final)?;
         if !self.verify_header(gs2header_enc) {
             return Err(Error::Protocol(Kind::InvalidField(Field::GS2Header)));
         }
         if !self.verify_nonce(nonce) {
             return Err(Error::Protocol(Kind::InvalidField(Field::Nonce)));
         }
-        if let Some(signature) = try!(self.verify_proof(proof)) {
+        if let Some(signature) = self.verify_proof(proof)? {
             if let Some(authzid) = self.authzid {
                 if self.provider.authorize(self.authcid, authzid) {
                     Ok(ServerFinal {
