@@ -142,11 +142,10 @@ impl<P: AuthenticationProvider> ScramServer<P> {
         client_first: &'a str,
     ) -> Result<ServerFirst<'a, P>, Error> {
         let (authcid, authzid, client_nonce) = parse_client_first(client_first)?;
-        let password_info = if let Some(info) = self.provider.get_password_for(authcid) {
-            info
-        } else {
-            return Err(Error::InvalidUser(authcid.to_string()));
-        };
+        let password_info = self
+            .provider
+            .get_password_for(authcid)
+            .ok_or_else(|| Error::InvalidUser(authcid.to_string()))?;
         Ok(ServerFirst {
             client_nonce,
             authcid,
@@ -217,8 +216,8 @@ impl<'a, P: AuthenticationProvider> ServerFirst<'a, P> {
                 gs2header,
                 client_first_bare,
                 server_first: server_first.clone(),
-                authcid: self.authcid.into(),
-                authzid: self.authzid.map(|a| a.into()),
+                authcid: self.authcid,
+                authzid: self.authzid,
                 provider: self.provider,
             },
             server_first.into_owned(),
