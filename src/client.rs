@@ -2,14 +2,14 @@ use std::borrow::Cow;
 use std::io;
 
 use base64;
-use rand::distributions::IndependentSample;
 use rand::distributions::range::Range;
-use rand::{Rng, OsRng};
+use rand::distributions::IndependentSample;
+use rand::{OsRng, Rng};
 use ring::digest::SHA256_OUTPUT_LEN;
 use ring::hmac;
 
-use utils::{hash_password, find_proofs};
-use error::{Error, Kind, Field};
+use error::{Error, Field, Kind};
+use utils::{find_proofs, hash_password};
 use NONCE_LENGTH;
 
 #[deprecated(since = "0.2.0", note = "Please use `ScramClient` instead. (exported at crate root)")]
@@ -37,21 +37,20 @@ fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, u16), Error> {
         }
     };
     let salt = match parts.next() {
-        Some(part) if &part.as_bytes()[..2] == b"s=" => {
-            try!(base64::decode(part[2..].as_bytes()).map_err(|_| {
-                Error::Protocol(Kind::InvalidField(Field::Salt))
-            }))
-        }
+        Some(part) if &part.as_bytes()[..2] == b"s=" => try!(
+            base64::decode(part[2..].as_bytes())
+                .map_err(|_| Error::Protocol(Kind::InvalidField(Field::Salt)))
+        ),
         _ => {
             return Err(Error::Protocol(Kind::ExpectedField(Field::Salt)));
         }
     };
     let iterations = match parts.next() {
-        Some(part) if &part.as_bytes()[..2] == b"i=" => {
-            try!(part[2..].parse().map_err(|_| {
-                Error::Protocol(Kind::InvalidField(Field::Iterations))
-            }))
-        }
+        Some(part) if &part.as_bytes()[..2] == b"i=" => try!(
+            part[2..]
+                .parse()
+                .map_err(|_| Error::Protocol(Kind::InvalidField(Field::Iterations)))
+        ),
         _ => {
             return Err(Error::Protocol(Kind::ExpectedField(Field::Iterations)));
         }
@@ -64,11 +63,8 @@ fn parse_server_final(data: &str) -> Result<Vec<u8>, Error> {
         return Err(Error::Protocol(Kind::ExpectedField(Field::VerifyOrError)));
     }
     match &data[..2] {
-        "v=" => {
-            base64::decode(&data.as_bytes()[2..]).map_err(|_| {
-                Error::Protocol(Kind::InvalidField(Field::VerifyOrError))
-            })
-        }
+        "v=" => base64::decode(&data.as_bytes()[2..])
+            .map_err(|_| Error::Protocol(Kind::InvalidField(Field::VerifyOrError))),
         "e=" => Err(Error::Authentication(data[2..].to_string())),
         _ => Err(Error::Protocol(Kind::ExpectedField(Field::VerifyOrError))),
     }
@@ -128,7 +124,11 @@ impl<'a> ScramClient<'a> {
         let nonce: String = (0..NONCE_LENGTH)
             .map(move |_| {
                 let x: u8 = range.ind_sample(&mut rng);
-                if x > 43 { (x + 1) as char } else { x as char }
+                if x > 43 {
+                    (x + 1) as char
+                } else {
+                    x as char
+                }
             })
             .collect();
 
@@ -187,14 +187,11 @@ impl<'a> ServerFirst<'a> {
     /// * Error::Protocol
     /// * Error::UnsupportedExtension
     pub fn handle_server_first(self, server_first: &str) -> Result<ClientFinal, Error> {
-
         let (nonce, salt, iterations) = try!(parse_server_first(server_first));
         if !nonce.starts_with(&self.client_nonce) {
             return Err(Error::Protocol(Kind::InvalidNonce));
         }
-
         let salted_password = hash_password(self.password, iterations, &salt);
-
         let (client_proof, server_signature): ([u8; SHA256_OUTPUT_LEN], hmac::Signature) =
             find_proofs(
                 &self.gs2header,
@@ -233,7 +230,9 @@ impl ClientFinal {
     /// method to continue the SCRAM handshake.
     #[inline]
     pub fn client_final(self) -> (ServerFinal, String) {
-        let server_final = ServerFinal { server_signature: self.server_signature };
+        let server_final = ServerFinal {
+            server_signature: self.server_signature,
+        };
         (server_final, self.client_final)
     }
 }

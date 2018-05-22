@@ -2,13 +2,13 @@ use std::borrow::Cow;
 use std::io;
 
 use base64;
-use rand::distributions::IndependentSample;
 use rand::distributions::range::Range;
-use rand::{Rng, OsRng};
+use rand::distributions::IndependentSample;
+use rand::{OsRng, Rng};
 use ring::digest::SHA256_OUTPUT_LEN;
 use ring::hmac;
 
-use error::{Error, Kind, Field};
+use error::{Error, Field, Kind};
 use utils::find_proofs;
 use NONCE_LENGTH;
 
@@ -187,7 +187,11 @@ impl<'a, P: AuthenticationProvider> ServerFirst<'a, P> {
         let server_nonce: String = (0..NONCE_LENGTH)
             .map(move |_| {
                 let x: u8 = range.ind_sample(&mut *rng);
-                if x > 43 { (x + 1) as char } else { x as char }
+                if x > 43 {
+                    (x + 1) as char
+                } else {
+                    x as char
+                }
             })
             .collect();
         let mut nonce = self.client_nonce.to_string();
@@ -262,8 +266,7 @@ impl<'a, P: AuthenticationProvider> ClientFinal<'a, P> {
                         status: AuthenticationStatus::NotAuthorized,
                         signature: format!(
                             "e=User '{}' not authorized to act as '{}'",
-                            self.authcid,
-                            authzid
+                            self.authcid, authzid
                         ),
                     })
                 }
@@ -334,8 +337,8 @@ impl ServerFinal {
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_client_first, parse_client_final};
-    use super::super::{Error, Kind, Field};
+    use super::super::{Error, Field, Kind};
+    use super::{parse_client_final, parse_client_first};
 
     #[test]
     fn test_parse_client_first_success() {
@@ -344,8 +347,8 @@ mod tests {
         assert!(authzid.is_none());
         assert_eq!(nonce, "abcdefghijk");
 
-        let (authcid, authzid, nonce) = parse_client_first("y,a=other user,n=user,r=abcdef=hijk")
-            .unwrap();
+        let (authcid, authzid, nonce) =
+            parse_client_first("y,a=other user,n=user,r=abcdef=hijk").unwrap();
         assert_eq!(authcid, "user");
         assert_eq!(authzid, Some("other user"));
         assert_eq!(nonce, "abcdef=hijk");

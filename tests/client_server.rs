@@ -1,6 +1,6 @@
-extern crate scram;
 extern crate rand;
 extern crate ring;
+extern crate scram;
 
 use ring::digest::SHA256_OUTPUT_LEN;
 use scram::*;
@@ -24,20 +24,16 @@ impl TestProvider {
 impl server::AuthenticationProvider for TestProvider {
     fn get_password_for(&self, username: &str) -> Option<server::PasswordInfo> {
         match username {
-            "user" => {
-                Some(server::PasswordInfo::new(
-                    self.user_password.to_vec(),
-                    4096,
-                    "salt".bytes().collect(),
-                ))
-            }
-            "admin" => {
-                Some(server::PasswordInfo::new(
-                    self.admin_password.to_vec(),
-                    8192,
-                    "messy".bytes().collect(),
-                ))
-            }
+            "user" => Some(server::PasswordInfo::new(
+                self.user_password.to_vec(),
+                4096,
+                "salt".bytes().collect(),
+            )),
+            "admin" => Some(server::PasswordInfo::new(
+                self.admin_password.to_vec(),
+                8192,
+                "messy".bytes().collect(),
+            )),
             _ => None,
         }
     }
@@ -46,7 +42,6 @@ impl server::AuthenticationProvider for TestProvider {
         authcid == authzid || authcid == "admin" && authzid == "user"
     }
 }
-
 
 #[test]
 fn test_simple_success() {

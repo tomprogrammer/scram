@@ -136,11 +136,11 @@ const NONCE_LENGTH: usize = 24;
 
 #[macro_use]
 mod utils;
-mod error;
 pub mod client;
+mod error;
 pub mod server;
 
 pub use client::ScramClient;
-pub use error::{Error, Kind, Field};
-pub use server::{ScramServer, AuthenticationProvider, PasswordInfo, AuthenticationStatus};
+pub use error::{Error, Field, Kind};
+pub use server::{AuthenticationProvider, AuthenticationStatus, PasswordInfo, ScramServer};
 pub use utils::hash_password;

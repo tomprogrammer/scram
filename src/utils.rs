@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use base64;
 use ring::digest::{digest, SHA256, SHA256_OUTPUT_LEN};
-use ring::hmac::{self, SigningKey, SigningContext};
+use ring::hmac::{self, SigningContext, SigningKey};
 use ring::pbkdf2;
 
 /// Parses a part of a SCRAM message, after it has been split on commas.
@@ -10,7 +10,7 @@ use ring::pbkdf2;
 /// Returns everything after the first '='.
 /// Returns a `ExpectedField` error when one of the above conditions fails.
 macro_rules! parse_part {
-    ($iter: expr, $field: ident, $key: expr) => (
+    ($iter:expr, $field:ident, $key:expr) => {
         if let Some(part) = $iter.next() {
             if part.len() < 2 {
                 return Err(Error::Protocol(Kind::ExpectedField(Field::$field)));
@@ -22,7 +22,7 @@ macro_rules! parse_part {
         } else {
             return Err(Error::Protocol(Kind::ExpectedField(Field::$field)));
         }
-    );
+    };
 }
 
 /// Hashes a password with SHA-256 with the given salt and number of iterations.  This should
@@ -65,8 +65,6 @@ pub fn find_proofs(
         b",",
         client_final_without_proof.as_bytes(),
     ];
-
-
 
     let salted_password_signing_key = SigningKey::new(&SHA256, salted_password);
     let client_key = hmac::sign(&salted_password_signing_key, b"Client Key");
