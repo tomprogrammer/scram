@@ -1,3 +1,10 @@
+Version 0.3.0 (2018-05-23)
+==========================
+
+* *Minimum rustc version:* `1.22.0`
+* Update `rand` to version `0.5`
+* Refactor code to use new language features available with `1.22.0`
+
 Version 0.2.4 (2018-05-02)
 ==========================
 
