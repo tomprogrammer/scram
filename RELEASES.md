@@ -1,3 +1,9 @@
+Version 0.4.0 (2018-08-05)
+==========================
+
+* Raise *minimum rustc version* to `1.25.0`.
+* Update `ring` to version `0.13`.
+
 Version 0.3.0 (2018-05-23)
 ==========================
 
