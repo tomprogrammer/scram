@@ -1,7 +1,7 @@
 [package]
 authors = ["Thomas Bahn <thomas@thomas-bahn.net>"]
 description = "A SCRAM provider library."
-documentation = "https://tomprogrammer.github.io/scram/scram/index.html"
+documentation = "https://docs.rs/scram"
 keywords = [ "scram", "authentication"]
 license = "MIT"
 name = "scram"
@@ -13,3 +13,7 @@ version = "0.4.0"
 base64 = "0.10.0"
 rand = "0.5.0"
 ring = "0.13"
+
+[badges]
+maintenance = { status = "actively-developed" }
+travis-ci = { repository = "https://github.com/tomprogrammer/scram", branch = "master" }
