@@ -11,7 +11,10 @@ use error::{Error, Field, Kind};
 use utils::{find_proofs, hash_password};
 use NONCE_LENGTH;
 
-#[deprecated(since = "0.2.0", note = "Please use `ScramClient` instead. (exported at crate root)")]
+#[deprecated(
+    since = "0.2.0",
+    note = "Please use `ScramClient` instead. (exported at crate root)"
+)]
 pub type ClientFirst<'a> = ScramClient<'a>;
 
 /// Parses a `server_first_message` returning a (none, salt, iterations) tuple if successful.

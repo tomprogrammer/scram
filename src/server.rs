@@ -202,7 +202,8 @@ impl<'a, P: AuthenticationProvider> ServerFirst<'a, P> {
             nonce,
             base64::encode(self.password_info.salt.as_slice()),
             self.password_info.iterations
-        ).into();
+        )
+        .into();
         (
             ClientFinal {
                 hashed_password: self.password_info.hashed_password,
