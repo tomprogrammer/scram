@@ -1,26 +1,69 @@
+# TemplateCIConfig { bench: BenchEntry { run: false, version: "nightly", allow_failure: false, install_commandline: None, commandline: "cargo bench" }, clippy: ClippyEntry { run: true, version: "nightly", allow_failure: false, install_commandline: None, commandline: "cargo clippy -- -D warnings" }, rustfmt: RustfmtEntry { run: true, version: "stable", allow_failure: false, install_commandline: None, commandline: "cargo fmt" }, additional_matrix_entries: {}, cache: "cargo", os: "linux", dist: "xenial", versions: ["stable", "beta", "nightly"], test_commandline: "cargo test --verbose --all" }
+os:
+  - "linux"
+dist: "xenial"
+
 language: rust
+sudo: required
+cache: cargo
 
 rust:
-  - 1.26.2
   - stable
   - beta
   - nightly
 
-before_install:
-  - |
-    pip install 'travis-cargo<0.2' --user &&
-    export PATH=%HOME/.local/bin:$PATH
-
-script:
-  - |
-    travis-cargo build &&
-    travis-cargo test &&
-    travis-cargo --only stable doc
-
-after_success:
-  - travis-cargo --only stable doc-upload
-
 env:
   global:
-    - TRAVIS_CARGO_NIGHTLY_FEATURE=""
-    - secure: rc2H83XKmEOtqBpH4xs2ijYsm1fZQmzoC3XVadmVZaARne6fFYzXMR1dxW4UkKDrZoKMY5w1NJjINyk36KRjPJumjj3BBR6VXZQWPjxUDFRf8ywY38aZjKzZcVuX+8zahvIOMjTUIGTxycy0H/kn6+EB9GDL1aM+z0889LceKQDMtn8g1hUOv8ooeQng1uMjf33tzCBuulM+1BHy2pecH+OTlXL/42dpjNOInqvS71yDWmc1zb4KFTiu6/W7YdDQQrvulMFmMmXj2JATQqGKsrdVL6xOJjhriG0NXHYq2UKxf8q7sgs7MsTwQmCyuIx5IlMdt1kQfvs5cV7aaNAVUtByPX6YJU7GOpVp1rR5OS4d3nw9MdpsYOh3DHkMmX6WLwbJmDW/+ahURV6zOOC5f7G8g9ji5FCjIb9TqUY28UZBfQYvnvmu+tAM5qe16kijNeC58z8DykFkQGjomK4Z0+HR6yg5nIhJR5eqa5zgd530ktmo25te2k/suRLm3zlSiREJbZUhIJFNzyqB6LPFhzUFtybShiZICtEt2wQpVohP3oXB7+yjKmzOfPSnAnCUYt/xSGB04LcegEhFcWp+KU1JWV+DMcuEVTJQImSKjmi/So6H2+LJc3oThjvQ4/WQ3L7tHlNWywPtKjXLNPc/1N54XIKoaB6fVGhCCkbEyZI=
+    - RUN_TEST=true
+    - RUN_CLIPPY=false
+    - RUN_BENCH=false
+
+matrix:
+  fast_finish: true
+  include:
+    - &rustfmt_build
+      rust: "stable"
+      env:
+        - RUN_RUSTFMT=true
+        - RUN_TEST=false
+    - &clippy_build
+      rust: "nightly"
+      env:
+        - RUN_CLIPPY=true
+        - RUN_TEST=false
+  allow_failures: []
+
+before_script:
+  - bash -c 'if [[ "$RUN_RUSTFMT" == "true" ]]; then
+      rustup component add rustfmt-preview
+      ;
+    fi'
+  - bash -c 'if [[ "$RUN_CLIPPY" == "true" ]]; then
+      rm -f ~/.cargo/bin/clippy;
+      rustup component add clippy-preview
+      ;
+    fi'
+
+script:
+  - bash -c 'if [[ "$RUN_TEST" == "true" ]]; then
+      cargo test --verbose --all
+      ;
+    fi'
+  - bash -c 'if [[ "$RUN_RUSTFMT" == "true" ]]; then
+      cargo fmt -v -- --check
+      ;
+    fi'
+  - bash -c 'if [[ "$RUN_CLIPPY" == "true" ]]; then
+      cargo clippy -- -D warnings
+      ;
+    fi'
+
+branches:
+  only:
+    # release tags
+    - /^v\d+\.\d+\.\d+.*$/
+    - master
+
+notifications:
+  email:
+    on_success: never
