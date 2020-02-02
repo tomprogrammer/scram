@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 use std::io;
+use std::num::NonZeroU16;
 
 use base64;
 use rand::distributions::{Distribution, Uniform};
@@ -18,7 +19,7 @@ use NONCE_LENGTH;
 pub type ClientFirst<'a> = ScramClient<'a>;
 
 /// Parses a `server_first_message` returning a (none, salt, iterations) tuple if successful.
-fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, u16), Error> {
+fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, NonZeroU16), Error> {
     if data.len() < 2 {
         return Err(Error::Protocol(Kind::ExpectedField(Field::Nonce)));
     }
@@ -183,14 +184,13 @@ impl<'a> ServerFirst<'a> {
             return Err(Error::Protocol(Kind::InvalidNonce));
         }
         let salted_password = hash_password(self.password, iterations, &salt);
-        let (client_proof, server_signature): ([u8; SHA256_OUTPUT_LEN], hmac::Signature) =
-            find_proofs(
-                &self.gs2header,
-                &self.client_first_bare,
-                &server_first,
-                &salted_password,
-                nonce,
-            );
+        let (client_proof, server_signature): ([u8; SHA256_OUTPUT_LEN], hmac::Tag) = find_proofs(
+            &self.gs2header,
+            &self.client_first_bare,
+            &server_first,
+            &salted_password,
+            nonce,
+        );
         let client_final = format!(
             "c={},r={},p={}",
             base64::encode(self.gs2header.as_bytes()),
@@ -208,7 +208,7 @@ impl<'a> ServerFirst<'a> {
 /// processed.
 #[derive(Debug)]
 pub struct ClientFinal {
-    server_signature: hmac::Signature,
+    server_signature: hmac::Tag,
     client_final: String,
 }
 
@@ -230,7 +230,7 @@ impl ClientFinal {
 /// The final state of the SCRAM mechanism after the final client message was computed.
 #[derive(Debug)]
 pub struct ServerFinal {
-    server_signature: hmac::Signature,
+    server_signature: hmac::Tag,
 }
 
 impl ServerFinal {
