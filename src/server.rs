@@ -292,14 +292,13 @@ impl<'a, P: AuthenticationProvider> ClientFinal<'a, P> {
 
     /// Checks that the proof from the client matches our saved credentials
     fn verify_proof(&self, proof: &str) -> Result<Option<String>, Error> {
-        let (client_proof, server_signature): ([u8; SHA256_OUTPUT_LEN], hmac::Signature) =
-            find_proofs(
-                &self.gs2header,
-                &self.client_first_bare,
-                &self.server_first,
-                self.hashed_password.as_slice(),
-                &self.nonce,
-            );
+        let (client_proof, server_signature): ([u8; SHA256_OUTPUT_LEN], hmac::Tag) = find_proofs(
+            &self.gs2header,
+            &self.client_first_bare,
+            &self.server_first,
+            self.hashed_password.as_slice(),
+            &self.nonce,
+        );
         let proof = if let Ok(proof) = base64::decode(proof.as_bytes()) {
             proof
         } else {
