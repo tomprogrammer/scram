@@ -1,5 +1,5 @@
 use std::borrow::Cow;
-use std::num::NonZeroU16;
+use std::num::NonZeroU32;
 
 use base64;
 use rand::distributions::{Distribution, Uniform};
@@ -18,7 +18,7 @@ use NONCE_LENGTH;
 pub type ClientFirst<'a> = ScramClient<'a>;
 
 /// Parses a `server_first_message` returning a (none, salt, iterations) tuple if successful.
-fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, NonZeroU16), Error> {
+fn parse_server_first(data: &str) -> Result<(&str, Vec<u8>, NonZeroU32), Error> {
     if data.len() < 2 {
         return Err(Error::Protocol(Kind::ExpectedField(Field::Nonce)));
     }

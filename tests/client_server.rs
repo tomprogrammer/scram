@@ -4,7 +4,7 @@ extern crate scram;
 
 use ring::digest::SHA256_OUTPUT_LEN;
 use scram::*;
-use std::num::NonZeroU16;
+use std::num::NonZeroU32;
 
 struct TestProvider {
     user_password: [u8; SHA256_OUTPUT_LEN],
@@ -13,9 +13,9 @@ struct TestProvider {
 
 impl TestProvider {
     pub fn new() -> Self {
-        let pwd_iterations = NonZeroU16::new(4096).unwrap();
+        let pwd_iterations = NonZeroU32::new(4096).unwrap();
         let user_password = hash_password("password", pwd_iterations, b"salt");
-        let adm_iterations = NonZeroU16::new(8192).unwrap();
+        let adm_iterations = NonZeroU32::new(8192).unwrap();
         let admin_password = hash_password("admin_password", adm_iterations, b"messy");
         TestProvider {
             user_password: user_password,
