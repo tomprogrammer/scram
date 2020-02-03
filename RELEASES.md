@@ -1,5 +1,5 @@
-Version 0.5.0
-=============
+Version 0.5.0 (2020-02-03)
+==========================
 
 * Update dependencies `ring`, `base64` and `rand`.
 * `utils::hash_password` takes `NonZeroU32` instead of `u16` for the number of iterations.
