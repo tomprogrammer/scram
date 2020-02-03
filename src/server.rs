@@ -1,9 +1,8 @@
 use std::borrow::Cow;
-use std::io;
 
 use base64;
 use rand::distributions::{Distribution, Uniform};
-use rand::{OsRng, Rng};
+use rand::{rngs::OsRng, Rng};
 use ring::digest::SHA256_OUTPUT_LEN;
 use ring::hmac;
 
@@ -172,9 +171,8 @@ impl<'a, P: AuthenticationProvider> ServerFirst<'a, P> {
     /// [`server_first_with_rng`](#method.server_first_with_rng). This method will return an error
     /// when it cannot initialize the OS's randomness source. See the documentation on `OsRng` for
     /// more information.
-    pub fn server_first(self) -> io::Result<(ClientFinal<'a, P>, String)> {
-        let mut rng = OsRng::new()?;
-        Ok(self.server_first_with_rng(&mut rng))
+    pub fn server_first(self) -> (ClientFinal<'a, P>, String) {
+        self.server_first_with_rng(&mut OsRng)
     }
 
     /// Creates the server's first message in response to the client's first message, with the

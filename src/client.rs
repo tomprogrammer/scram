@@ -1,10 +1,9 @@
 use std::borrow::Cow;
-use std::io;
 use std::num::NonZeroU16;
 
 use base64;
 use rand::distributions::{Distribution, Uniform};
-use rand::{OsRng, Rng};
+use rand::{rngs::OsRng, Rng};
 use ring::digest::SHA256_OUTPUT_LEN;
 use ring::hmac;
 
@@ -92,9 +91,8 @@ impl<'a> ScramClient<'a> {
     /// # Return value
     ///
     /// An I/O error is returned if the internal random number generator couldn't be constructed.
-    pub fn new(authcid: &'a str, password: &'a str, authzid: Option<&'a str>) -> io::Result<Self> {
-        let rng = OsRng::new()?;
-        Ok(Self::with_rng(authcid, password, authzid, rng))
+    pub fn new(authcid: &'a str, password: &'a str, authzid: Option<&'a str>) -> Self {
+        Self::with_rng(authcid, password, authzid, &mut OsRng)
     }
 
     /// Constructs an initial state for the SCRAM mechanism using the provided credentials and a
@@ -109,18 +107,18 @@ impl<'a> ScramClient<'a> {
     /// the same as the authenticated username.
     /// * rng: A random number generator used to generate random nonces. Please only use a
     /// cryptographically secure random number generator!
-    pub fn with_rng<R: Rng>(
+    pub fn with_rng<R: Rng + ?Sized>(
         authcid: &'a str,
         password: &'a str,
         authzid: Option<&'a str>,
-        mut rng: R,
+        rng: &mut R,
     ) -> Self {
         let gs2header: Cow<'static, str> = match authzid {
             Some(authzid) => format!("n,a={},", authzid).into(),
             None => "n,,".into(),
         };
         let nonce: String = Uniform::from(33..125)
-            .sample_iter(&mut rng)
+            .sample_iter(rng)
             .map(|x: u8| if x > 43 { (x + 1) as char } else { x as char })
             .take(NONCE_LENGTH)
             .collect();

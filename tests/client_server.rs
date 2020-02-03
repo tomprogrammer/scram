@@ -48,13 +48,13 @@ impl server::AuthenticationProvider for TestProvider {
 
 #[test]
 fn test_simple_success() {
-    let scram_client = ScramClient::new("user", "password", None).unwrap();
+    let scram_client = ScramClient::new("user", "password", None);
     let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();
 
     let scram_server = scram_server.handle_client_first(&client_first).unwrap();
-    let (scram_server, server_first) = scram_server.server_first().unwrap();
+    let (scram_server, server_first) = scram_server.server_first();
 
     let scram_client = scram_client.handle_server_first(&server_first).unwrap();
     let (scram_client, client_final) = scram_client.client_final();
@@ -69,13 +69,13 @@ fn test_simple_success() {
 
 #[test]
 fn test_bad_password() {
-    let scram_client = ScramClient::new("user", "badpassword", None).unwrap();
+    let scram_client = ScramClient::new("user", "badpassword", None);
     let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();
 
     let scram_server = scram_server.handle_client_first(&client_first).unwrap();
-    let (scram_server, server_first) = scram_server.server_first().unwrap();
+    let (scram_server, server_first) = scram_server.server_first();
 
     let scram_client = scram_client.handle_server_first(&server_first).unwrap();
     let (scram_client, client_final) = scram_client.client_final();
@@ -89,13 +89,13 @@ fn test_bad_password() {
 
 #[test]
 fn test_authorize_different() {
-    let scram_client = ScramClient::new("admin", "admin_password", Some("user")).unwrap();
+    let scram_client = ScramClient::new("admin", "admin_password", Some("user"));
     let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();
 
     let scram_server = scram_server.handle_client_first(&client_first).unwrap();
-    let (scram_server, server_first) = scram_server.server_first().unwrap();
+    let (scram_server, server_first) = scram_server.server_first();
 
     let scram_client = scram_client.handle_server_first(&server_first).unwrap();
     let (scram_client, client_final) = scram_client.client_final();
@@ -110,13 +110,13 @@ fn test_authorize_different() {
 
 #[test]
 fn test_authorize_fail() {
-    let scram_client = ScramClient::new("user", "password", Some("admin")).unwrap();
+    let scram_client = ScramClient::new("user", "password", Some("admin"));
     let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();
 
     let scram_server = scram_server.handle_client_first(&client_first).unwrap();
-    let (scram_server, server_first) = scram_server.server_first().unwrap();
+    let (scram_server, server_first) = scram_server.server_first();
 
     let scram_client = scram_client.handle_server_first(&server_first).unwrap();
     let (scram_client, client_final) = scram_client.client_final();
@@ -130,13 +130,13 @@ fn test_authorize_fail() {
 
 #[test]
 fn test_authorize_non_existent() {
-    let scram_client = ScramClient::new("admin", "admin_password", Some("nonexistent")).unwrap();
+    let scram_client = ScramClient::new("admin", "admin_password", Some("nonexistent"));
     let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();
 
     let scram_server = scram_server.handle_client_first(&client_first).unwrap();
-    let (scram_server, server_first) = scram_server.server_first().unwrap();
+    let (scram_server, server_first) = scram_server.server_first();
 
     let scram_client = scram_client.handle_server_first(&server_first).unwrap();
     let (scram_client, client_final) = scram_client.client_final();
@@ -150,7 +150,7 @@ fn test_authorize_non_existent() {
 
 #[test]
 fn test_invalid_user() {
-    let scram_client = ScramClient::new("nobody", "password", None).unwrap();
+    let scram_client = ScramClient::new("nobody", "password", None);
     let scram_server = ScramServer::new(TestProvider::new());
 
     let (_, client_first) = scram_client.client_first();
@@ -160,7 +160,7 @@ fn test_invalid_user() {
 
 #[test]
 fn test_empty_username() {
-    let scram_client = ScramClient::new("", "password", None).unwrap();
+    let scram_client = ScramClient::new("", "password", None);
     let scram_server = ScramServer::new(TestProvider::new());
 
     let (_, client_first) = scram_client.client_first();
@@ -170,13 +170,13 @@ fn test_empty_username() {
 
 #[test]
 fn test_empty_password() {
-    let scram_client = ScramClient::new("user", "", None).unwrap();
+    let scram_client = ScramClient::new("user", "", None);
     let scram_server = ScramServer::new(TestProvider::new());
 
     let (scram_client, client_first) = scram_client.client_first();
 
     let scram_server = scram_server.handle_client_first(&client_first).unwrap();
-    let (scram_server, server_first) = scram_server.server_first().unwrap();
+    let (scram_server, server_first) = scram_server.server_first();
 
     let scram_client = scram_client.handle_server_first(&server_first).unwrap();
     let (scram_client, client_final) = scram_client.client_final();
