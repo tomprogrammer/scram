@@ -1,3 +1,10 @@
+Version 0.5.0
+=============
+
+* Update dependencies `ring`, `base64` and `rand`.
+* `utils::hash_password` takes `NonZeroU32` instead of `u16` for the number of iterations.
+* `ScramClient::new` and `ServerFirst::server_first` don't return a `Result` anymore.
+
 Version 0.4.0 (2018-08-05)
 ==========================
 
