@@ -37,7 +37,7 @@ fn send_and_receive(message: &str) -> String {
 }
 
 // Create a SCRAM state from the credentials.
-let scram = ScramClient::new("user", "password", None).unwrap();
+let scram = ScramClient::new("user", "password", None);
 
 // Get the client message and reassign the SCRAM state.
 let (scram, client_first) = scram.client_first();
@@ -107,7 +107,7 @@ let client_first = receive();
 let scram_server = scram_server.handle_client_first(&client_first).unwrap();
 // Craft a response to the client's message and advance the SCRAM state
 // We could use our own source of randomness here, with `server_first_with_rng()`
-let (scram_server, server_first) = scram_server.server_first().unwrap();
+let (scram_server, server_first) = scram_server.server_first();
 // Send our message to the client and read the response
 send(&server_first);
 let client_final = receive();
