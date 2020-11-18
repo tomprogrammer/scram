@@ -132,9 +132,7 @@ impl<'a> ScramClient<'a> {
 
     /// Returns the next state and the first client message.
     ///
-    /// Call the
-    /// [`ServerFirst::handle_server_first`](struct.ServerFirst.html#method.handle_server_first)
-    /// method to continue the SCRAM handshake.
+    /// Call the [`ServerFirst::handle_server_first`] method to continue the SCRAM handshake.
     pub fn client_first(self) -> (ServerFirst<'a>, String) {
         let escaped_authcid: Cow<'a, str> =
             if self.authcid.chars().any(|chr| chr == ',' || chr == '=') {
@@ -167,12 +165,11 @@ impl<'a> ServerFirst<'a> {
     /// Processes the first answer from the server and returns the next state or an error. If an
     /// error is returned the SCRAM handshake is aborted.
     ///
-    /// Call the [`ClientFinal::client_final`](struct.ClientFinal.html#method.client_final) method
-    /// to continue the handshake.
+    /// Call the [`ClientFinal::client_final`] method to continue the handshake.
     ///
     /// # Return value
     ///
-    /// This method returns only a subset of the errors defined in [`Error`](../enum.Error.html):
+    /// This method returns only a subset of the errors defined in [`Error`]:
     ///
     /// * Error::Protocol
     /// * Error::UnsupportedExtension
@@ -214,8 +211,7 @@ impl ClientFinal {
     /// Returns the next state and the final client message.
     ///
     /// Call the
-    /// [`ServerFinal::handle_server_final`](struct.ServerFinal.html#method.handle_server_final)
-    /// method to continue the SCRAM handshake.
+    /// [`ServerFinal::handle_server_final`] method to continue the SCRAM handshake.
     #[inline]
     pub fn client_final(self) -> (ServerFinal, String) {
         let server_final = ServerFinal {
@@ -242,7 +238,7 @@ impl ServerFinal {
     /// * A value of `Err(Error::InvalidServer)` or `Err(Error::Authentication(_))` means that the
     /// authentication request was rejected.
     ///
-    /// Detailed semantics are documented in the [`Error`](../enum.Error.html) type.
+    /// Detailed semantics are documented in the [`Error`] type.
     pub fn handle_server_final(self, server_final: &str) -> Result<(), Error> {
         if self.server_signature.as_ref() == &*parse_server_final(server_final)? {
             Ok(())

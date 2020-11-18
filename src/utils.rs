@@ -25,8 +25,8 @@ macro_rules! parse_part {
 }
 
 /// Hashes a password with SHA-256 with the given salt and number of iterations.  This should
-/// be used by [`AuthenticationProvider`](server/trait.AuthenticationProvider.html) implementors
-/// to hash any passwords prior to being saved.
+/// be used by [`AuthenticationProvider`](crate::server::AuthenticationProvider) implementors to
+/// hash any passwords prior to being saved.
 pub fn hash_password(
     password: &str,
     iterations: NonZeroU32,

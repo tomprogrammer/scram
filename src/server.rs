@@ -13,8 +13,7 @@ use NONCE_LENGTH;
 /// Responds to client authentication challenges. It's the entrypoint for the SCRAM server side
 /// implementation.
 pub struct ScramServer<P: AuthenticationProvider> {
-    /// The [authentication provider](trait.AuthenticationProvider.html) that will find passwords
-    /// and check authorization.
+    /// The ['AuthenticationProvider'] that will find passwords and check authorization.
     provider: P,
 }
 
@@ -55,9 +54,9 @@ impl PasswordInfo {
 /// if not implemented will simply allow users to act on their own behalf, and no one else's.
 ///
 /// To ensure the password is hashed correctly, cleartext passwords can be hased using the
-/// [`hash_password()`](../index.html#method.hash_password) function provided in the crate root.
+/// [`hash_password`](crate::utils::hash_password) function provided in the crate root.
 pub trait AuthenticationProvider {
-    /// Gets the [`PasswordInfo`](struct.PasswordInfo.html) for the given user.
+    /// Gets the [`PasswordInfo`] for the given user.
     fn get_password_for(&self, username: &str) -> Option<PasswordInfo>;
 
     /// Checks to see if the user given by `authcid` is authorized to act as the user given by
@@ -133,8 +132,7 @@ impl<P: AuthenticationProvider> ScramServer<P> {
 
     /// Handle a challenge message sent by the client to the server. If the message is well formed,
     /// and the requested user exists, then this will progress to the next stage of the
-    /// authentication process, [`ServerFirst`](struct.ServerFirst.html). Otherwise, it will return
-    /// an error.
+    /// authentication process, [`ServerFirst`]. Otherwise, it will return an error.
     pub fn handle_client_first<'a>(
         &'a self,
         client_first: &'a str,
@@ -166,19 +164,18 @@ pub struct ServerFirst<'a, P: 'a + AuthenticationProvider> {
 
 impl<'a, P: AuthenticationProvider> ServerFirst<'a, P> {
     /// Creates the server's first message in response to the client's first message. By default,
-    /// this method uses [`OsRng`](https://doc.rust-lang.org/rand/rand/os/struct.OsRng.html) as its
-    /// source of randomness for the nonce. To specify the randomness source, use
-    /// [`server_first_with_rng`](#method.server_first_with_rng). This method will return an error
-    /// when it cannot initialize the OS's randomness source. See the documentation on `OsRng` for
-    /// more information.
+    /// this method uses [`OsRng`] as its source of randomness for the nonce. To specify the
+    /// randomness source, use [`server_first_with_rng`](Self::server_first_with_rng). This method
+    /// will return an error when it cannot initialize the OS's randomness source. See the
+    /// documentation on `OsRng` for more information.
     pub fn server_first(self) -> (ClientFinal<'a, P>, String) {
         self.server_first_with_rng(&mut OsRng)
     }
 
     /// Creates the server's first message in response to the client's first message, with the
     /// given source of randomness used for the server's nonce. The randomness is assigned here
-    /// instead of universally in [`ScramServer`](struct.ScramServer.html) for increased
-    /// flexibility, and also to keep `ScramServer` immutable.
+    /// instead of universally in [`ScramServer`] for increased flexibility, and also to keep
+    /// `ScramServer` immutable.
     pub fn server_first_with_rng<R: Rng>(self, rng: &mut R) -> (ClientFinal<'a, P>, String) {
         let mut nonce = String::with_capacity(self.client_nonce.len() + NONCE_LENGTH);
         nonce.push_str(self.client_nonce);
@@ -237,8 +234,7 @@ impl<'a, P: AuthenticationProvider> ClientFinal<'a, P> {
     /// authentication or authorization has failed), this will return `Ok` along with a message to
     /// send the client. In cases where authentication or authorization has failed, the message will
     /// contain error information for the client. To check if authentication and authorization have
-    /// succeeded, use [`get_status()`](struct.ServerFinal.html#method.get_status) on the return
-    /// value.
+    /// succeeded, use [`server_final`](ServerFinal::server_final) on the return value.
     pub fn handle_client_final(self, client_final: &str) -> Result<ServerFinal, Error> {
         let (gs2header_enc, nonce, proof) = parse_client_final(client_final)?;
         if !self.verify_header(gs2header_enc) {
@@ -319,9 +315,8 @@ pub struct ServerFinal {
 }
 
 impl ServerFinal {
-    /// Get the [`AuthenticationStatus`](enum.AuthenticationStatus.html) of the exchange.  This
-    /// status can be successful, failed because of invalid authentication or failed because of
-    /// invalid authorization.
+    /// Get the [`AuthenticationStatus`] of the exchange. This status can be successful, failed
+    /// because of invalid authentication or failed because of invalid authorization.
     pub fn server_final(self) -> (AuthenticationStatus, String) {
         (self.status, self.signature)
     }
