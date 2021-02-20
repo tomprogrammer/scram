@@ -10,8 +10,8 @@ repository = "https://github.com/tomprogrammer/scram"
 version = "0.5.0"
 
 [dependencies]
-base64 = "0.11.0"
-rand = "0.7.0"
+base64 = "0.13.0"
+rand = "0.8.0"
 ring = "0.16.9"
 
 [badges]
