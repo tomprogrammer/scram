@@ -1,3 +1,9 @@
+Version 0.5.1 (2021-02-21)
+==========================
+
+* Update dependencies `base64` and `rand`.
+* Use documentation intra links.
+
 Version 0.5.0 (2020-02-03)
 ==========================
 

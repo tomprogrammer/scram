@@ -7,7 +7,7 @@ license = "MIT"
 name = "scram"
 readme = "README.md"
 repository = "https://github.com/tomprogrammer/scram"
-version = "0.5.0"
+version = "0.5.1"
 
 [dependencies]
 base64 = "0.13.0"
