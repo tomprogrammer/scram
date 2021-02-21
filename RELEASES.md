@@ -1,3 +1,9 @@
+Version 0.6.0 (2021-02-21)
+==========================
+
+* Updated external dependeny `rand` requires a minor bump.
+* Yanked 0.5.1
+
 Version 0.5.1 (2021-02-21)
 ==========================
 
