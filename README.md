@@ -3,7 +3,7 @@
 This implementation provides a client and a server for the SCRAM-SHA-256 mechanism according to
 RFC5802 and RFC7677. It doesn't support channel-binding.
 
-[Read the documentation.](https://tomprogrammer.github.io/scram/scram/index.html)
+[Read the documentation.](https://docs.rs/scram)
 
 # Limitations
 
