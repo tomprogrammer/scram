@@ -213,6 +213,21 @@ impl<'a, P: AuthenticationProvider> ServerFirst<'a, P> {
             server_first.into_owned(),
         )
     }
+
+    /// The username parsed from client first message that used for authentication.
+    pub fn authcid(&self) -> &str {
+        self.authcid
+    }
+
+    /// The username parsed from client first message that used for authorization.
+    pub fn authzid(&self) -> Option<&str> {
+        self.authzid
+    }
+
+    /// The nonce value parsed from client first message.
+    pub fn client_nonce(&self) -> &str {
+        self.client_nonce
+    }
 }
 
 /// Represents the stage after the server has generated its first response to the client. This
@@ -271,6 +286,16 @@ impl<'a, P: AuthenticationProvider> ClientFinal<'a, P> {
                 signature: "e=Invalid Password".to_string(),
             })
         }
+    }
+
+    /// The username parsed from client first message that used for authentication.
+    pub fn authcid(&self) -> &str {
+        self.authcid
+    }
+
+    /// The username parsed from client first message that used for authorization.
+    pub fn authzid(&self) -> Option<&str> {
+        self.authzid
     }
 
     /// Checks that the gs2header received from the client is the same as the one we've stored
